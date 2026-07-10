@@ -114,6 +114,67 @@ table.reportes tr:hover{background:var(--gray-050);cursor:pointer;}
   .grid-3{grid-template-columns:repeat(2,1fr);}
 }
 
+/* =========================================================================
+   ADAPTACIÓN A MÓVIL — tablas se convierten en tarjetas apiladas
+   ========================================================================= */
+@media (max-width:760px){
+  main{padding:14px 12px 50px;}
+  .card{padding:16px 14px;}
+  #topbar{padding:12px 14px;flex-wrap:wrap;gap:8px;}
+  #topbar .brand{font-size:14px;}
+  #topbar .brand span{display:block;font-size:11px;font-weight:500;}
+  #topbar .userinfo{gap:8px;font-size:11.5px;}
+  #tabs{padding:0 12px;overflow-x:auto;}
+  .tab-btn{padding:12px 12px;font-size:12.5px;white-space:nowrap;}
+  .grid-4,.grid-3{grid-template-columns:1fr 1fr;gap:10px;}
+
+  /* --- tabla de gastos (captura) --- */
+  #items-wrap{overflow-x:visible;}
+  table.items{min-width:0;width:100%;}
+  table.items thead{display:none;}
+  table.items, table.items tbody, table.items tr, table.items td{display:block;width:100%;}
+  table.items tr{
+    position:relative;border:1px solid var(--gray-200);border-radius:10px;
+    margin-bottom:14px;padding:12px 12px 14px;background:var(--white);
+    box-shadow:0 1px 4px rgba(11,37,69,0.07);
+  }
+  table.items td{border:none;padding:7px 0;}
+  table.items td::before{
+    content:attr(data-label);display:block;font-size:10.5px;font-weight:700;
+    color:var(--gray-500);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:4px;
+  }
+  table.items td.cell-remove{position:absolute;top:8px;right:8px;padding:0;width:auto;}
+  table.items td.cell-remove::before{content:none;}
+  table.items input, table.items select{font-size:14px;padding:9px 10px;}
+
+  /* --- tabla de reportes / detalle --- */
+  table.reportes thead{display:none;}
+  table.reportes, table.reportes tbody, table.reportes tr, table.reportes td{display:block;width:100%;}
+  table.reportes tr{
+    border:1px solid var(--gray-200);border-radius:10px;margin-bottom:12px;
+    padding:10px 12px;background:var(--white);box-shadow:0 1px 4px rgba(11,37,69,0.07);
+  }
+  table.reportes tr:hover{background:var(--white);}
+  table.reportes td{border:none;padding:5px 0;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  table.reportes td::before{
+    content:attr(data-label);font-size:10.5px;font-weight:700;color:var(--gray-500);
+    text-transform:uppercase;letter-spacing:0.3px;flex-shrink:0;
+  }
+  table.reportes td.acciones-cell{justify-content:flex-start;flex-wrap:wrap;padding-top:8px;}
+  table.reportes td.acciones-cell::before{display:none;}
+  .filter-bar{flex-direction:column;}
+  .filter-bar input{max-width:100%;}
+
+  .modal-box{padding:16px 14px;max-width:100%;}
+  .actions-row{flex-direction:column;gap:10px;align-items:stretch;}
+  .actions-row > div{display:flex;gap:8px;}
+  .actions-row .btn{width:100%;}
+}
+
+@media (max-width:420px){
+  .grid-4,.grid-3{grid-template-columns:1fr;}
+}
+
 /* ---------- Estatus pills ---------- */
 .estatus-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;}
 .estatus-ENVIADO{background:var(--gold-100);color:#8A611C;}
@@ -317,7 +378,7 @@ table.reportes tr:hover{background:var(--gray-050);cursor:pointer;}
    CONFIGURACIÓN — pega aquí la URL de tu Web App de Apps Script (.../exec)
    ========================================================================= */
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxuhjrGep7WHPxuB3JyIK0eOLFr61cBluG1X3Kj3qcy9uexGcndvXBaT99krOzKRgAR/exec"
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxsn1hKPeSAN6Ry1y0D9WzHS6ecIw08VgA_smy_wakCQI5C092CyIpBj6ajX3ReEKsb/exec"
 };
 
 /* =========================================================================
@@ -511,23 +572,23 @@ function renderItemsTable() {
     ).join('');
 
     tr.innerHTML = `
-      <td><input type="date" class="row-fecha" value="${it.fecha}" min="${desde||''}" max="${hasta||''}"
+      <td data-label="Fecha"><input type="date" class="row-fecha" value="${it.fecha}" min="${desde||''}" max="${hasta||''}"
             onchange="updateItem('${it.id}','fecha',this.value)"></td>
-      <td><select onchange="updateItem('${it.id}','categoria',this.value)">
+      <td data-label="Categoría"><select onchange="updateItem('${it.id}','categoria',this.value)">
             <option value="">Seleccionar…</option>${catOptions}</select></td>
-      <td><select onchange="updateItem('${it.id}','comprobante',this.value)">
+      <td data-label="Comprobante"><select onchange="updateItem('${it.id}','comprobante',this.value)">
             <option value="">Seleccionar…</option>${compOptions}</select></td>
-      <td><select onchange="updateItem('${it.id}','concepto',this.value)" ${!it.categoria ? 'disabled' : ''}>
+      <td data-label="Concepto"><select onchange="updateItem('${it.id}','concepto',this.value)" ${!it.categoria ? 'disabled' : ''}>
             <option value="">${it.categoria ? 'Seleccionar…' : 'Elige categoría primero'}</option>${concOptions}</select></td>
-      <td><input type="text" value="${escapeHtml(it.descripcion)}" placeholder="Descripción"
+      <td data-label="Descripción"><input type="text" value="${escapeHtml(it.descripcion)}" placeholder="Descripción"
             onchange="updateItem('${it.id}','descripcion',this.value)"></td>
-      <td><input type="text" value="${escapeHtml(it.justificacion)}" placeholder="Solo si aplica"
+      <td data-label="Justificación (fuera de política)"><input type="text" value="${escapeHtml(it.justificacion)}" placeholder="Solo si aplica"
             onchange="updateItem('${it.id}','justificacion',this.value)"></td>
-      <td><input type="text" list="agencias-datalist" value="${escapeHtml(it.agencia_area)}" placeholder="Buscar…"
+      <td data-label="Agencia / Área"><input type="text" list="agencias-datalist" value="${escapeHtml(it.agencia_area)}" placeholder="Buscar…"
             onchange="updateItem('${it.id}','agencia_area',this.value)"></td>
-      <td><input type="number" min="0" step="0.01" value="${it.monto}" placeholder="0.00"
+      <td data-label="Monto"><input type="number" min="0" step="0.01" value="${it.monto}" placeholder="0.00"
             onchange="updateItem('${it.id}','monto',this.value)"></td>
-      <td><button class="row-remove" onclick="removeItemRow('${it.id}')" title="Eliminar">×</button></td>
+      <td class="cell-remove"><button class="row-remove" onclick="removeItemRow('${it.id}')" title="Eliminar">×</button></td>
     `;
     tbody.appendChild(tr);
   });
@@ -569,6 +630,7 @@ function validateItemsClient(desde, hasta) {
     if (!it.categoria) return 'Fila ' + n + ': falta la categoría.';
     if (!it.comprobante) return 'Fila ' + n + ': falta el comprobante.';
     if (!it.concepto) return 'Fila ' + n + ': falta el concepto.';
+    if (!it.descripcion || !it.descripcion.trim()) return 'Fila ' + n + ': falta la descripción.';
     if (!it.agencia_area) return 'Fila ' + n + ': falta la agencia/área.';
     const monto = parseFloat(it.monto);
     if (!monto || isNaN(monto) || monto <= 0) return 'Fila ' + n + ': el monto debe ser mayor a cero.';
@@ -669,15 +731,15 @@ function renderReportesTable() {
       const tr = document.createElement('tr');
       const idSafe = r.id_reporte;
       tr.innerHTML = `
-        <td onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${r.id_reporte}</td>
-        <td onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${escapeHtml(r.nombre_empleado)}</td>
-        <td onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${escapeHtml(r.puesto)}</td>
-        <td onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${r.periodo_desde} → ${r.periodo_hasta}</td>
-        <td onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${escapeHtml(r.motivo)}</td>
-        <td onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${formatMoney(r.total_gastos)}</td>
-        <td><span class="estatus-pill estatus-${r.estatus}">${r.estatus}</span></td>
-        <td>${r.fecha_creacion}</td>
-        <td class="acciones-cell">
+        <td data-label="ID" onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${r.id_reporte}</td>
+        <td data-label="Colaborador" onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${escapeHtml(r.nombre_empleado)}</td>
+        <td data-label="Puesto" onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${escapeHtml(r.puesto)}</td>
+        <td data-label="Periodo" onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${r.periodo_desde} → ${r.periodo_hasta}</td>
+        <td data-label="Motivo" onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${escapeHtml(r.motivo)}</td>
+        <td data-label="Total" onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${formatMoney(r.total_gastos)}</td>
+        <td data-label="Estatus"><span class="estatus-pill estatus-${r.estatus}">${r.estatus}</span></td>
+        <td data-label="Fecha">${r.fecha_creacion}</td>
+        <td data-label="Acciones" class="acciones-cell">
           ${puedeAutorizarRechazar ? `<button class="btn-xs btn-xs-autorizar" onclick="authorizeReporte('${idSafe}')">Autorizar</button>` : ''}
           ${puedeAutorizarRechazar ? `<button class="btn-xs btn-xs-rechazar" onclick="rejectReporte('${idSafe}')">Rechazar</button>` : ''}
           ${puedeEditar ? `<button class="btn-xs btn-xs-editar" onclick="editAndResend('${idSafe}')">Editar y reenviar</button>` : ''}
@@ -707,10 +769,10 @@ async function showDetalle(idReporte) {
     const tbody = document.getElementById('detalle-tbody');
     tbody.innerHTML = (res.registros || []).map(r => `
       <tr>
-        <td>${r.fila}</td><td>${r.fecha}</td><td>${escapeHtml(r.categoria)}</td>
-        <td>${escapeHtml(r.comprobante)}</td><td>${escapeHtml(r.concepto)}</td>
-        <td>${escapeHtml(r.descripcion)}</td><td>${escapeHtml(r.agencia_area)}</td>
-        <td>${formatMoney(r.monto)}</td>
+        <td data-label="#">${r.fila}</td><td data-label="Fecha">${r.fecha}</td><td data-label="Categoría">${escapeHtml(r.categoria)}</td>
+        <td data-label="Comprobante">${escapeHtml(r.comprobante)}</td><td data-label="Concepto">${escapeHtml(r.concepto)}</td>
+        <td data-label="Descripción">${escapeHtml(r.descripcion)}</td><td data-label="Agencia/Área">${escapeHtml(r.agencia_area)}</td>
+        <td data-label="Monto">${formatMoney(r.monto)}</td>
       </tr>`).join('');
     document.getElementById('detalle-modal').classList.remove('hidden');
   } catch (e) {
