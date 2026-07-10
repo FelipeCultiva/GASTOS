@@ -181,7 +181,7 @@ table.reportes tr:hover{background:var(--gray-050);cursor:pointer;}
         <input id="login-password" type="password" autocomplete="current-password" placeholder="••••••••">
       </div>
       <button class="btn btn-primary" onclick="doLogin()">Ingresar</button>
-      <div class="hint">Tu usuario es tu clave de empleado (4 letras + 2 dígitos).<br>La contraseña inicial es la misma clave, en mayúsculas.</div>
+      <div class="hint">Tu usuario es tu clave de colaborador (4 letras + 2 dígitos).<br>La contraseña inicial es la misma clave, en mayúsculas.</div>
     </div>
   </div>
 
@@ -205,9 +205,9 @@ table.reportes tr:hover{background:var(--gray-050);cursor:pointer;}
       <!-- ---- TAB: NUEVO REPORTE ---- -->
       <section id="tab-nuevo">
         <div class="card">
-          <h2>Datos del trabajador</h2>
+          <h2>Datos del colaborador</h2>
           <div class="grid-4">
-            <div class="readonly-field"><div class="lbl">No. Empleado</div><div class="val" id="emp-nro">—</div></div>
+            <div class="readonly-field"><div class="lbl">No. Colaborador</div><div class="val" id="emp-nro">—</div></div>
             <div class="readonly-field"><div class="lbl">Nombre</div><div class="val" id="emp-nombre">—</div></div>
             <div class="readonly-field"><div class="lbl">Puesto</div><div class="val" id="emp-puesto">—</div></div>
             <div class="readonly-field"><div class="lbl">Centro de Costo</div><div class="val" id="emp-cc">—</div></div>
@@ -265,13 +265,13 @@ table.reportes tr:hover{background:var(--gray-050);cursor:pointer;}
         <div class="card">
           <h2 id="reportes-title">Reportes</h2>
           <div class="filter-bar">
-            <input type="text" id="filtro-texto" placeholder="Buscar por empleado, clave o motivo..." oninput="renderReportesTable()">
+            <input type="text" id="filtro-texto" placeholder="Buscar por colaborador, clave o motivo..." oninput="renderReportesTable()">
             <button class="btn btn-outline btn-sm" onclick="loadReportes()">Actualizar</button>
           </div>
           <table class="reportes">
             <thead>
               <tr>
-                <th>ID</th><th>Empleado</th><th>Puesto</th><th>Periodo</th><th>Motivo</th><th>Total</th><th>Estatus</th><th>Fecha</th><th>Acciones</th>
+                <th>ID</th><th>Colaborador</th><th>Puesto</th><th>Periodo</th><th>Motivo</th><th>Total</th><th>Estatus</th><th>Fecha</th><th>Acciones</th>
               </tr>
             </thead>
             <tbody id="reportes-tbody"></tbody>
@@ -317,7 +317,7 @@ table.reportes tr:hover{background:var(--gray-050);cursor:pointer;}
    CONFIGURACIÓN — pega aquí la URL de tu Web App de Apps Script (.../exec)
    ========================================================================= */
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxsmWeXK-nffPh47dqK2pKqz31wVEAl81PQc88MAUygQRBAQRf8KjK2CBhcp7vcSbly/exec"
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxuhjrGep7WHPxuB3JyIK0eOLFr61cBluG1X3Kj3qcy9uexGcndvXBaT99krOzKRgAR/exec"
 };
 
 /* =========================================================================
@@ -560,7 +560,7 @@ function populateAgenciasDatalist() {
 /* =========================================================================
    VALIDACIÓN — campos obligatorios de cada gasto (espejo del backend)
    ========================================================================= */
-function validateItemsClient() {
+function validateItemsClient(desde, hasta) {
   if (ITEMS.length === 0) return 'Agrega al menos un gasto.';
   for (let i = 0; i < ITEMS.length; i++) {
     const it = ITEMS[i];
@@ -572,6 +572,9 @@ function validateItemsClient() {
     if (!it.agencia_area) return 'Fila ' + n + ': falta la agencia/área.';
     const monto = parseFloat(it.monto);
     if (!monto || isNaN(monto) || monto <= 0) return 'Fila ' + n + ': el monto debe ser mayor a cero.';
+    if (desde && hasta && (it.fecha < desde || it.fecha > hasta)) {
+      return 'Las fechas no corresponden al periodo declarado.';
+    }
   }
   return null;
 }
@@ -586,7 +589,7 @@ async function submitReporte() {
   if (!desde || !hasta) return showToast('Define el periodo (desde / hasta).', true);
   if (!motivo) return showToast('Indica el motivo del reporte.', true);
 
-  const errItems = validateItemsClient();
+  const errItems = validateItemsClient(desde, hasta);
   if (errItems) return showToast(errItems, true);
 
   const confirmMsg = editingId
@@ -728,10 +731,10 @@ async function authorizeReporte(id) {
 
 async function rejectReporte(id) {
   const ok = await showConfirm(
-    'Vas a marcar este reporte como RECHAZADO. El empleado podrá corregirlo y reenviarlo.',
+    'Vas a marcar este reporte como RECHAZADO. El colaborador podrá corregirlo y reenviarlo.',
     {
       title: 'Rechazar reporte', okLabel: 'Rechazar',
-      extraHtml: '<textarea id="reject-comment" rows="3" placeholder="Motivo del rechazo (opcional, el empleado lo verá)"></textarea>'
+      extraHtml: '<textarea id="reject-comment" rows="3" placeholder="Motivo del rechazo (opcional, el colaborador lo verá)"></textarea>'
     }
   );
   if (!ok) return;
