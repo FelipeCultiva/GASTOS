@@ -113,6 +113,53 @@ table.reportes tr:hover{background:var(--gray-050);cursor:pointer;}
   .grid-4{grid-template-columns:repeat(2,1fr);}
   .grid-3{grid-template-columns:repeat(2,1fr);}
 }
+
+/* ---------- Estatus pills ---------- */
+.estatus-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;}
+.estatus-ENVIADO{background:var(--gold-100);color:#8A611C;}
+.estatus-AUTORIZADO{background:var(--green-100);color:var(--green-700);}
+.estatus-RECHAZADO{background:var(--red-100);color:var(--red-700);}
+
+/* ---------- Acciones en tabla de reportes ---------- */
+.acciones-cell{display:flex;flex-wrap:wrap;gap:5px;}
+.btn-xs{padding:5px 8px;font-size:11px;border-radius:5px;border:none;font-weight:600;white-space:nowrap;}
+.btn-xs-autorizar{background:var(--green-700);color:#fff;}
+.btn-xs-rechazar{background:var(--red-700);color:#fff;}
+.btn-xs-editar{background:var(--gold-600);color:#fff;}
+.btn-xs-eliminar{background:var(--white);color:var(--red-700);border:1px solid var(--red-100);}
+.btn-xs-imprimir{background:var(--white);color:var(--navy-800);border:1px solid var(--gray-200);}
+
+/* ---------- Campos inválidos ---------- */
+.field-invalid{border-color:var(--red-700) !important;background:var(--red-100) !important;}
+
+/* ---------- Modal de confirmación ---------- */
+#confirm-modal .modal-box{max-width:420px;}
+#confirm-modal p{color:var(--gray-700);font-size:13.5px;line-height:1.5;}
+#confirm-extra textarea{width:100%;margin-top:10px;padding:8px;border:1px solid var(--gray-200);border-radius:6px;font-size:13px;font-family:inherit;resize:vertical;}
+
+/* ---------- Impresión: carta vertical ---------- */
+#print-container{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #print-container, #print-container *{visibility:visible;}
+  #print-container{display:block;position:absolute;top:0;left:0;width:100%;}
+  @page{size:letter portrait;margin:14mm;}
+  .print-page{font-family:'IBM Plex Sans',Arial,sans-serif;color:#182233;}
+  .print-header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #0B2545;padding-bottom:8px;margin-bottom:12px;}
+  .print-brand{font-family:'Libre Franklin',sans-serif;font-weight:800;font-size:17px;color:#0B2545;}
+  .print-doctitle{font-size:12px;color:#4A5361;}
+  table.print-info{width:100%;font-size:11px;margin-bottom:14px;border-collapse:collapse;}
+  table.print-info td{padding:3px 4px;}
+  table.print-items{width:100%;border-collapse:collapse;font-size:9.5px;}
+  table.print-items th{background:#0B2545 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#fff;padding:5px 4px;text-align:left;}
+  table.print-items td{padding:4px;border-bottom:1px solid #DDE1E6;}
+  table.print-items tfoot td{border-top:2px solid #0B2545;padding-top:6px;}
+  .print-signatures{display:flex;justify-content:space-around;margin-top:60px;}
+  .sig-box{text-align:center;font-size:10px;color:#4A5361;width:200px;}
+  .sig-line{border-top:1px solid #182233;margin-bottom:6px;height:40px;}
+  .print-footer{margin-top:26px;font-size:9px;color:#9AA3AF;text-align:center;}
+  .print-estatus{font-weight:700;}
+}
 </style>
 </head>
 <body>
@@ -204,8 +251,11 @@ table.reportes tr:hover{background:var(--gray-050);cursor:pointer;}
             <span class="total-val" id="total-val">$0.00</span>
           </div>
           <div class="actions-row">
-            <span></span>
-            <button class="btn btn-gold" onclick="submitReporte()">Enviar reporte</button>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-outline" onclick="printForm()">🖨 Imprimir</button>
+              <button class="btn btn-outline hidden" id="cancel-edit-btn" onclick="cancelEdit()">Cancelar edición</button>
+            </div>
+            <button class="btn btn-gold" id="submit-btn" onclick="submitReporte()">Enviar reporte</button>
           </div>
         </div>
       </section>
@@ -221,7 +271,7 @@ table.reportes tr:hover{background:var(--gray-050);cursor:pointer;}
           <table class="reportes">
             <thead>
               <tr>
-                <th>ID</th><th>Empleado</th><th>Puesto</th><th>Periodo</th><th>Motivo</th><th>Total</th><th>Estatus</th><th>Fecha</th>
+                <th>ID</th><th>Empleado</th><th>Puesto</th><th>Periodo</th><th>Motivo</th><th>Total</th><th>Estatus</th><th>Fecha</th><th>Acciones</th>
               </tr>
             </thead>
             <tbody id="reportes-tbody"></tbody>
@@ -236,12 +286,28 @@ table.reportes tr:hover{background:var(--gray-050);cursor:pointer;}
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal()">×</button>
     <h3 id="detalle-titulo">Detalle de reporte</h3>
+    <div id="detalle-comentario" style="display:none;background:var(--red-100);color:var(--red-700);border-radius:6px;padding:9px 12px;font-size:12.5px;margin-bottom:12px;"></div>
+    <button class="btn btn-outline btn-sm" style="margin-bottom:12px;" onclick="printReporte(window._currentDetalleId)">🖨 Imprimir</button>
     <table class="reportes">
       <thead><tr><th>#</th><th>Fecha</th><th>Categoría</th><th>Comprobante</th><th>Concepto</th><th>Descripción</th><th>Agencia/Área</th><th>Monto</th></tr></thead>
       <tbody id="detalle-tbody"></tbody>
     </table>
   </div>
 </div>
+
+<div id="confirm-modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3 id="confirm-title">Confirmar acción</h3>
+    <p id="confirm-message"></p>
+    <div id="confirm-extra"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
+      <button class="btn btn-outline btn-sm" onclick="closeConfirm(false)">Cancelar</button>
+      <button class="btn btn-gold btn-sm" id="confirm-ok-btn" onclick="closeConfirm(true)">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="print-container"></div>
 
 <div id="toast" class="toast"></div>
 <div id="loading" class="loading-overlay hidden">Cargando...</div>
@@ -251,7 +317,7 @@ table.reportes tr:hover{background:var(--gray-050);cursor:pointer;}
    CONFIGURACIÓN — pega aquí la URL de tu Web App de Apps Script (.../exec)
    ========================================================================= */
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycby04sprEdne6uyr_eDk3ZdURPOe1nUNGYNj_1kNODPvnWIMHDPBmxUpum1yIn0K71kv/exec"
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxsmWeXK-nffPh47dqK2pKqz31wVEAl81PQc88MAUygQRBAQRf8KjK2CBhcp7vcSbly/exec"
 };
 
 /* =========================================================================
@@ -262,6 +328,7 @@ let BOOTSTRAP = null;    // { empleado, categorias, comprobantes, agencias, conc
 let ITEMS = [];          // filas de gasto en captura
 let REPORTES_CACHE = [];
 let rowSeq = 0;
+let editingId = null;    // si no es null, "Enviar reporte" en realidad reenvía este id (estaba RECHAZADO)
 
 /* =========================================================================
    API HELPER
@@ -293,6 +360,22 @@ function showToast(msg, isError) {
   t.textContent = msg;
   t.className = 'toast show' + (isError ? ' error' : '');
   setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+/* ---------- Modal de confirmación genérico (Promesa) ---------- */
+let _confirmResolve = null;
+function showConfirm(message, opts) {
+  opts = opts || {};
+  document.getElementById('confirm-title').textContent = opts.title || 'Confirmar acción';
+  document.getElementById('confirm-message').textContent = message;
+  document.getElementById('confirm-extra').innerHTML = opts.extraHtml || '';
+  document.getElementById('confirm-ok-btn').textContent = opts.okLabel || 'Confirmar';
+  document.getElementById('confirm-modal').classList.remove('hidden');
+  return new Promise(resolve => { _confirmResolve = resolve; });
+}
+function closeConfirm(result) {
+  document.getElementById('confirm-modal').classList.add('hidden');
+  if (_confirmResolve) { _confirmResolve(result); _confirmResolve = null; }
 }
 
 /* =========================================================================
@@ -339,6 +422,7 @@ async function afterLogin() {
     fillEmpleadoCard();
     populateAgenciasDatalist();
     ITEMS = [];
+    editingId = null;
     document.getElementById('items-tbody').innerHTML = '';
     addItemRow();
   } else {
@@ -474,7 +558,26 @@ function populateAgenciasDatalist() {
 }
 
 /* =========================================================================
-   ENVÍO DE REPORTE
+   VALIDACIÓN — campos obligatorios de cada gasto (espejo del backend)
+   ========================================================================= */
+function validateItemsClient() {
+  if (ITEMS.length === 0) return 'Agrega al menos un gasto.';
+  for (let i = 0; i < ITEMS.length; i++) {
+    const it = ITEMS[i];
+    const n = i + 1;
+    if (!it.fecha) return 'Fila ' + n + ': falta la fecha.';
+    if (!it.categoria) return 'Fila ' + n + ': falta la categoría.';
+    if (!it.comprobante) return 'Fila ' + n + ': falta el comprobante.';
+    if (!it.concepto) return 'Fila ' + n + ': falta el concepto.';
+    if (!it.agencia_area) return 'Fila ' + n + ': falta la agencia/área.';
+    const monto = parseFloat(it.monto);
+    if (!monto || isNaN(monto) || monto <= 0) return 'Fila ' + n + ': el monto debe ser mayor a cero.';
+  }
+  return null;
+}
+
+/* =========================================================================
+   ENVÍO DE REPORTE (nuevo, o reenvío de uno RECHAZADO en edición)
    ========================================================================= */
 async function submitReporte() {
   const { desde, hasta } = periodoLimits();
@@ -482,13 +585,15 @@ async function submitReporte() {
 
   if (!desde || !hasta) return showToast('Define el periodo (desde / hasta).', true);
   if (!motivo) return showToast('Indica el motivo del reporte.', true);
-  if (ITEMS.length === 0) return showToast('Agrega al menos un gasto.', true);
 
-  for (const it of ITEMS) {
-    if (!it.fecha || !it.categoria || !it.comprobante || !it.concepto || !it.agencia_area || !it.monto) {
-      return showToast('Completa todos los campos obligatorios de cada gasto.', true);
-    }
-  }
+  const errItems = validateItemsClient();
+  if (errItems) return showToast(errItems, true);
+
+  const confirmMsg = editingId
+    ? '¿Confirmas reenviar este reporte corregido? Volverá a quedar en estatus ENVIADO.'
+    : '¿Estás seguro de enviar este reporte? No podrás editarlo a menos que sea rechazado.';
+  const ok = await showConfirm(confirmMsg, { okLabel: editingId ? 'Reenviar' : 'Enviar' });
+  if (!ok) return;
 
   const payload = {
     clave_empleado: BOOTSTRAP.empleado.clave,
@@ -503,15 +608,31 @@ async function submitReporte() {
   };
 
   try {
-    const res = await api('submitReporte', payload);
-    showToast('Reporte enviado: ' + res.id_reporte);
-    document.getElementById('motivo').value = '';
-    ITEMS = [];
-    addItemRow();
+    let res;
+    if (editingId) {
+      payload.id_reporte = editingId;
+      res = await api('updateReporte', payload);
+      showToast('Reporte reenviado: ' + res.id_reporte);
+    } else {
+      res = await api('submitReporte', payload);
+      showToast('Reporte enviado: ' + res.id_reporte);
+    }
+    cancelEdit();
     switchTab('reportes');
   } catch (e) {
     showToast(e.message || 'No se pudo enviar el reporte.', true);
   }
+}
+
+function cancelEdit() {
+  editingId = null;
+  document.getElementById('submit-btn').textContent = 'Enviar reporte';
+  document.getElementById('cancel-edit-btn').classList.add('hidden');
+  document.getElementById('motivo').value = '';
+  document.getElementById('periodo-desde').value = '';
+  document.getElementById('periodo-hasta').value = '';
+  ITEMS = [];
+  addItemRow();
 }
 
 /* =========================================================================
@@ -531,20 +652,35 @@ function renderReportesTable() {
   const filtro = (document.getElementById('filtro-texto').value || '').toLowerCase();
   const tbody = document.getElementById('reportes-tbody');
   tbody.innerHTML = '';
+  const esAutorizador = SESSION.rol === 'AUTORIZADOR';
+  const miClave = String(SESSION.clave_empleado || '').trim().toUpperCase();
+
   REPORTES_CACHE
     .filter(r => !filtro || JSON.stringify(r).toLowerCase().includes(filtro))
     .forEach(r => {
+      const esDueno = String(r.clave_empleado).trim().toUpperCase() === miClave;
+      const puedeAutorizarRechazar = esAutorizador && r.estatus === 'ENVIADO';
+      const puedeEditar = esDueno && r.estatus === 'RECHAZADO';
+      const puedeEliminar = esAutorizador || (esDueno && r.estatus !== 'AUTORIZADO');
+
       const tr = document.createElement('tr');
-      tr.onclick = () => showDetalle(r.id_reporte);
+      const idSafe = r.id_reporte;
       tr.innerHTML = `
-        <td>${r.id_reporte}</td>
-        <td>${escapeHtml(r.nombre_empleado)}</td>
-        <td>${escapeHtml(r.puesto)}</td>
-        <td>${r.periodo_desde} → ${r.periodo_hasta}</td>
-        <td>${escapeHtml(r.motivo)}</td>
-        <td>${formatMoney(r.total_gastos)}</td>
-        <td><span class="estatus-pill">${r.estatus}</span></td>
+        <td onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${r.id_reporte}</td>
+        <td onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${escapeHtml(r.nombre_empleado)}</td>
+        <td onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${escapeHtml(r.puesto)}</td>
+        <td onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${r.periodo_desde} → ${r.periodo_hasta}</td>
+        <td onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${escapeHtml(r.motivo)}</td>
+        <td onclick="showDetalle('${idSafe}')" style="cursor:pointer;">${formatMoney(r.total_gastos)}</td>
+        <td><span class="estatus-pill estatus-${r.estatus}">${r.estatus}</span></td>
         <td>${r.fecha_creacion}</td>
+        <td class="acciones-cell">
+          ${puedeAutorizarRechazar ? `<button class="btn-xs btn-xs-autorizar" onclick="authorizeReporte('${idSafe}')">Autorizar</button>` : ''}
+          ${puedeAutorizarRechazar ? `<button class="btn-xs btn-xs-rechazar" onclick="rejectReporte('${idSafe}')">Rechazar</button>` : ''}
+          ${puedeEditar ? `<button class="btn-xs btn-xs-editar" onclick="editAndResend('${idSafe}')">Editar y reenviar</button>` : ''}
+          <button class="btn-xs btn-xs-imprimir" onclick="printReporte('${idSafe}')">Imprimir</button>
+          ${puedeEliminar ? `<button class="btn-xs btn-xs-eliminar" onclick="deleteReporteUI('${idSafe}')">Eliminar</button>` : ''}
+        </td>
       `;
       tbody.appendChild(tr);
     });
@@ -553,7 +689,18 @@ function renderReportesTable() {
 async function showDetalle(idReporte) {
   try {
     const res = await api('getReporteDetalle', { id_reporte: idReporte });
+    window._currentDetalleId = idReporte;
     document.getElementById('detalle-titulo').textContent = 'Detalle de reporte ' + idReporte;
+
+    const header = REPORTES_CACHE.find(r => r.id_reporte === idReporte);
+    const comentarioBox = document.getElementById('detalle-comentario');
+    if (header && header.estatus === 'RECHAZADO' && header.comentario_autorizacion) {
+      comentarioBox.style.display = 'block';
+      comentarioBox.textContent = 'Motivo de rechazo: ' + header.comentario_autorizacion;
+    } else {
+      comentarioBox.style.display = 'none';
+    }
+
     const tbody = document.getElementById('detalle-tbody');
     tbody.innerHTML = (res.registros || []).map(r => `
       <tr>
@@ -565,6 +712,140 @@ async function showDetalle(idReporte) {
     document.getElementById('detalle-modal').classList.remove('hidden');
   } catch (e) {
     showToast(e.message || 'No se pudo cargar el detalle.', true);
+  }
+}
+
+/* ---------- Autorizar / Rechazar (rol AUTORIZADOR) ---------- */
+async function authorizeReporte(id) {
+  const ok = await showConfirm('¿Autorizar este reporte de gastos?', { title: 'Autorizar reporte', okLabel: 'Autorizar' });
+  if (!ok) return;
+  try {
+    await api('setEstatus', { id_reporte: id, estatus: 'AUTORIZADO', usuario: SESSION.usuario, rol: SESSION.rol });
+    showToast('Reporte autorizado.');
+    loadReportes();
+  } catch (e) { showToast(e.message || 'No se pudo autorizar.', true); }
+}
+
+async function rejectReporte(id) {
+  const ok = await showConfirm(
+    'Vas a marcar este reporte como RECHAZADO. El empleado podrá corregirlo y reenviarlo.',
+    {
+      title: 'Rechazar reporte', okLabel: 'Rechazar',
+      extraHtml: '<textarea id="reject-comment" rows="3" placeholder="Motivo del rechazo (opcional, el empleado lo verá)"></textarea>'
+    }
+  );
+  if (!ok) return;
+  const comentario = document.getElementById('reject-comment') ? document.getElementById('reject-comment').value : '';
+  try {
+    await api('setEstatus', { id_reporte: id, estatus: 'RECHAZADO', comentario, usuario: SESSION.usuario, rol: SESSION.rol });
+    showToast('Reporte rechazado.');
+    loadReportes();
+  } catch (e) { showToast(e.message || 'No se pudo rechazar.', true); }
+}
+
+/* ---------- Editar y reenviar (dueño, solo si RECHAZADO) ---------- */
+async function editAndResend(id) {
+  try {
+    const det = await api('getReporteDetalle', { id_reporte: id });
+    const header = REPORTES_CACHE.find(r => r.id_reporte === id);
+    if (!header) return showToast('No se encontró el encabezado del reporte.', true);
+
+    document.getElementById('periodo-desde').value = header.periodo_desde;
+    document.getElementById('periodo-hasta').value = header.periodo_hasta;
+    document.getElementById('motivo').value = header.motivo;
+
+    ITEMS = (det.registros || []).map(r => ({
+      id: 'row_' + (++rowSeq),
+      fecha: r.fecha, categoria: r.categoria, comprobante: r.comprobante, concepto: r.concepto,
+      descripcion: r.descripcion || '', justificacion: r.justificacion || '',
+      agencia_area: r.agencia_area, monto: r.monto
+    }));
+
+    editingId = id;
+    document.getElementById('submit-btn').textContent = 'Guardar cambios y reenviar';
+    document.getElementById('cancel-edit-btn').classList.remove('hidden');
+    switchTab('nuevo');
+    onPeriodoChange();
+    renderItemsTable();
+    showToast('Editando reporte ' + id + '. Corrige lo necesario y reenvía.');
+  } catch (e) {
+    showToast(e.message || 'No se pudo cargar el reporte para editar.', true);
+  }
+}
+
+/* ---------- Eliminar ---------- */
+async function deleteReporteUI(id) {
+  const ok = await showConfirm('Esta acción elimina el reporte de forma permanente. ¿Continuar?', { title: 'Eliminar reporte', okLabel: 'Eliminar' });
+  if (!ok) return;
+  try {
+    await api('deleteReporte', { id_reporte: id, clave_empleado: SESSION.clave_empleado, rol: SESSION.rol });
+    showToast('Reporte eliminado.');
+    loadReportes();
+  } catch (e) { showToast(e.message || 'No se pudo eliminar.', true); }
+}
+
+/* ---------- Impresión (carta vertical) ---------- */
+function buildPrintHTML(header, items) {
+  const total = items.reduce((s, it) => s + (parseFloat(it.monto) || 0), 0);
+  const rows = items.map((it, i) => `
+    <tr>
+      <td>${i + 1}</td><td>${it.fecha || ''}</td><td>${escapeHtml(it.categoria || '')}</td>
+      <td>${escapeHtml(it.comprobante || '')}</td><td>${escapeHtml(it.concepto || '')}</td>
+      <td>${escapeHtml(it.descripcion || '')}</td><td>${escapeHtml(it.agencia_area || '')}</td>
+      <td style="text-align:right;">${formatMoney(it.monto || 0)}</td>
+    </tr>`).join('');
+
+  document.getElementById('print-container').innerHTML = `
+    <div class="print-page">
+      <div class="print-header">
+        <div class="print-brand">MAS CON MENOS</div>
+        <div class="print-doctitle">Comprobación de Gastos</div>
+      </div>
+      <table class="print-info">
+        <tr><td><b>Folio:</b> ${header.idReporte || '(borrador sin enviar)'}</td><td class="print-estatus"><b>Estatus:</b> ${header.estatus || 'BORRADOR'}</td></tr>
+        <tr><td><b>Nombre:</b> ${escapeHtml(header.nombre || '')}</td><td><b>Puesto:</b> ${escapeHtml(header.puesto || '')}</td></tr>
+        <tr><td><b>Centro de costo:</b> ${escapeHtml(header.cc || '')}</td><td><b>Periodo:</b> ${header.desde || ''} a ${header.hasta || ''}</td></tr>
+        <tr><td colspan="2"><b>Motivo:</b> ${escapeHtml(header.motivo || '')}</td></tr>
+      </table>
+      <table class="print-items">
+        <thead><tr><th>#</th><th>Fecha</th><th>Categoría</th><th>Comprobante</th><th>Concepto</th><th>Descripción</th><th>Agencia/Área</th><th>Monto</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr><td colspan="7" style="text-align:right;">Total</td><td style="text-align:right;">${formatMoney(total)}</td></tr></tfoot>
+      </table>
+      <div class="print-signatures">
+        <div class="sig-box"><div class="sig-line"></div>Elaboró</div>
+        <div class="sig-box"><div class="sig-line"></div>Autorizó</div>
+      </div>
+      <div class="print-footer">Generado el ${new Date().toLocaleDateString('es-MX')} — MAS CON MENOS · Comprobación de Gastos</div>
+    </div>
+  `;
+}
+
+function printForm() {
+  if (ITEMS.length === 0) return showToast('No hay gastos capturados para imprimir.', true);
+  const e = BOOTSTRAP.empleado;
+  buildPrintHTML({
+    nombre: e.nombre, puesto: e.puesto, cc: e.centro_costo,
+    desde: document.getElementById('periodo-desde').value,
+    hasta: document.getElementById('periodo-hasta').value,
+    motivo: document.getElementById('motivo').value,
+    idReporte: editingId, estatus: editingId ? 'EN EDICIÓN' : 'BORRADOR'
+  }, ITEMS);
+  window.print();
+}
+
+async function printReporte(id) {
+  try {
+    const det = await api('getReporteDetalle', { id_reporte: id });
+    const header = REPORTES_CACHE.find(r => r.id_reporte === id) || {};
+    buildPrintHTML({
+      nombre: header.nombre_empleado, puesto: header.puesto, cc: header.centro_costo,
+      desde: header.periodo_desde, hasta: header.periodo_hasta, motivo: header.motivo,
+      idReporte: id, estatus: header.estatus
+    }, det.registros || []);
+    window.print();
+  } catch (e) {
+    showToast(e.message || 'No se pudo preparar la impresión.', true);
   }
 }
 
