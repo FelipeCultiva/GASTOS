@@ -132,26 +132,23 @@ table.reportes tr:hover{background:var(--gray-050);}
 
     <main>
       <!-- ===================== TAB: NUEVO REPORTE GASTOS ===================== -->
-      <section id="tab-nuevo">
-        <div class="card">
-          <h2>Datos del colaborador</h2>
-          <div class="grid-4">
-            <div class="readonly-field"><div class="lbl">No. Colaborador</div><div class="val" id="emp-nro">—</div></div>
-            <div class="readonly-field"><div class="lbl">Nombre</div><div class="val" id="emp-nombre">—</div></div>
-            <div class="readonly-field"><div class="lbl">Puesto</div><div class="val" id="emp-puesto">—</div></div>
-            <div class="readonly-field"><div class="lbl">Centro de Costo</div><div class="val" id="emp-cc">—</div></div>
-          </div>
+     <div class="card">
+      <h2>Periodo de comprobación</h2>
+      <div class="grid-3">
+        <div class="field">
+          <label>Desde</label>
+          <input type="date" id="periodo-desde" onchange="actualizarLimitesCalendario()">
         </div>
-        <div class="card">
-          <h2>Periodo de comprobación</h2>
-          <div class="grid-3">
-            <div class="field"><label>Desde</label><input type="date" id="periodo-desde"></div>
-            <div class="field"><label>Hasta</label><input type="date" id="periodo-hasta"></div>
-            <div class="field"><label>Desde</label><input type="date" id="periodo-desde" onchange="actualizarLimitesCalendario()"></div>
-            <div class="field"><label>Hasta</label><input type="date" id="periodo-hasta" onchange="actualizarLimitesCalendario()"></div>
-            <div class="field"><label>Motivo</label><input type="text" id="motivo" placeholder="Ej. Visita operativa Toluca"></div>
-          </div>
+        <div class="field">
+          <label>Hasta</label>
+          <input type="date" id="periodo-hasta" onchange="actualizarLimitesCalendario()">
         </div>
+        <div class="field">
+          <label>Motivo</label>
+          <input type="text" id="motivo" placeholder="Ej. Visita operativa Toluca">
+        </div>
+      </div>
+    </div>
 
         <!-- NUEVA INTERFAZ: Carga de PDF Único Global para todo el Reporte -->
         <div class="card" style="background: var(--gold-100); border: 1px dashed var(--gold-600);">
@@ -416,8 +413,9 @@ function switchTab(tab) {
 
 // Sincroniza los límites min/max de los inputs de fecha en las líneas de gasto
 function actualizarLimitesCalendario() {
-  const desde = document.getElementById('periodo-desde').value;
-  const hasta = document.getElementById('periodo-hasta').value;
+  // Re-renderizar la tabla para que aplique los nuevos min/max leídos del encabezado
+  renderItemsTable();
+}
   
   // Buscar todos los campos de fecha de las filas de gastos actuales y futuras
   const inputsFecha = document.querySelectorAll('#items-tbody input[type="date"]');
@@ -466,30 +464,48 @@ function processGlobalFile(inputElement) {
 function renderItemsTable() {
   const tbody = document.getElementById('items-tbody');
   tbody.innerHTML = '';
+  
+  if (!BOOTSTRAP) return;
+
+  // Obtener los límites del encabezado en tiempo real
+  const desdeVal = document.getElementById('periodo-desde').value;
+  const hastaVal = document.getElementById('periodo-hasta').value;
+
   ITEMS.forEach(it => {
     const tr = document.createElement('tr');
-    const catOptions = (BOOTSTRAP.categorias || []).map(c => `<option value="${c.categoria}" ${it.categoria === c.categoria ? 'selected' : ''}>${c.categoria}</option>`).join('');
-    const compOptions = (BOOTSTRAP.comprobantes || []).map(c => `<option value="${c}" ${it.comprobante === c ? 'selected' : ''}>${c}</option>`).join('');
+    
+    const catOptions = (BOOTSTRAP.categorias || []).map(c => 
+      `<option value="${c.categoria}" ${it.categoria === c.categoria ? 'selected' : ''}>${c.categoria}</option>`
+    ).join('');
+    
+    const compOptions = (BOOTSTRAP.comprobantes || []).map(c => 
+      `<option value="${c}" ${it.comprobante === c ? 'selected' : ''}>${c}</option>`
+    ).join('');
     
     let conceptosFiltro = [];
     if (it.categoria === 'VIATICOS') conceptosFiltro = BOOTSTRAP.conceptos.VIATICOS || [];
-    if (it.categoria === 'CAJA CHICA') conceptosFiltro = BOOTSTRAP.conceptos['CAJA CHICA'] || [];
-    if (it.categoria === 'ACTIVIDAD') conceptosFiltro = BOOTSTRAP.conceptos.ACTIVIDAD || [];
-    const concOptions = conceptosFiltro.map(c => `<option value="${c}" ${it.concepto === c ? 'selected' : ''}>${c}</option>`).join('');
+    else if (it.categoria === 'CAJA CHICA') conceptosFiltro = BOOTSTRAP.conceptos['CAJA CHICA'] || [];
+    else if (it.categoria === 'ACTIVIDAD') conceptosFiltro = BOOTSTRAP.conceptos.ACTIVIDAD || [];
+    
+    const concOptions = conceptosFiltro.map(c => 
+      `<option value="${c}" ${it.concepto === c ? 'selected' : ''}>${c}</option>`
+    ).join('');
 
-    // CORRECCIÓN: Inyección del select dinámico mapeando el catálogo completo de agencias
-    const agenciaOptions = (BOOTSTRAP.agencias || []).map(a => `<option value="${a}" ${it.agencia_area === a ? 'selected' : ''}>${a}</option>`).join('');
+    const agenciaOptions = (BOOTSTRAP.agencias || []).map(a => 
+      `<option value="${a}" ${it.agencia_area === a ? 'selected' : ''}>${a}</option>`
+    ).join('');
 
+    // CORRECCIÓN: Inyectar min y max directamente en el string del HTML
     tr.innerHTML = `
-      <td><input type="date" value="${it.fecha}" onchange="updateItem('${it.id}','fecha',this.value)"></td>
+      <td><input type="date" value="${it.fecha || ''}" min="${desdeVal}" max="${hastaVal}" onchange="updateItem('${it.id}','fecha',this.value)"></td>
       <td><select onchange="updateItem('${it.id}','categoria',this.value)"><option value="">...</option>${catOptions}</select></td>
       <td><select onchange="updateItem('${it.id}','comprobante',this.value)"><option value="">...</option>${compOptions}</select></td>
       <td><select onchange="updateItem('${it.id}','concepto',this.value)" ${!it.categoria?'disabled':''}><option value="">Seleccionar...</option>${concOptions}</select></td>
-      <td><input type="text" value="${it.descripcion}" placeholder="Detalle..." onchange="updateItem('${it.id}','descripcion',this.value)"></td>
-      <td><input type="text" value="${it.justificacion}" placeholder="Opcional..." onchange="updateItem('${it.id}','justificacion',this.value)"></td>
+      <td><input type="text" value="${it.descripcion || ''}" placeholder="Detalle..." onchange="updateItem('${it.id}','descripcion',this.value)"></td>
+      <td><input type="text" value="${it.justificacion || ''}" placeholder="Opcional..." onchange="updateItem('${it.id}','justificacion',this.value)"></td>
       <td><select onchange="updateItem('${it.id}','agencia_area',this.value)"><option value="">Seleccionar área...</option>${agenciaOptions}</select></td>
-      <td><input type="number" step="0.01" value="${it.monto}" placeholder="0.00" style="text-align:right;" onchange="updateItem('${it.id}','monto',this.value)"></td>
-      <td><button style="background:none; border:none; color:var(--red-700); font-weight:bold;" onclick="removeItemRow('${it.id}')">×</button></td>
+      <td><input type="number" step="0.01" value="${it.monto || ''}" placeholder="0.00" style="text-align:right;" onchange="updateItem('${it.id}','monto',this.value)"></td>
+      <td><button style="background:none; border:none; color:var(--red-700); font-weight:bold; cursor:pointer;" onclick="removeItemRow('${it.id}')">×</button></td>
     `;
     tbody.appendChild(tr);
   });
