@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MAS CON MENOS | Gestión de Egresos y Viáticos</title>
+<title>MAS CON MENOS | Gestión de Gastos y Viáticos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -120,7 +120,7 @@ table.reportes tr:hover{background:var(--gray-050);}
   <!-- ===================== MAIN SCREEN ===================== -->
   <div id="main-screen" class="hidden">
     <div id="topbar">
-      <div class="brand">MAS CON MENOS <span>| Suite de Egresos</span></div>
+      <div class="brand">MAS CON MENOS <span>|Módulo de Viaticos</span></div>
       <div class="userinfo">
         <span id="userinfo-nombre"></span>
         <span id="userinfo-rol" class="role-badge"></span>
@@ -131,7 +131,7 @@ table.reportes tr:hover{background:var(--gray-050);}
     <div id="tabs">
       <button class="tab-btn active" id="tab-btn-nuevo" onclick="switchTab('nuevo')">Comprobación de Gastos</button>
       <button class="tab-btn" id="tab-btn-solicitud" onclick="switchTab('solicitud')">Solicitud de Viáticos</button>
-      <button class="tab-btn" id="tab-btn-reportes" onclick="switchTab('reportes')">Bandeja Contable / Historial</button>
+      <button class="tab-btn" id="tab-btn-reportes" onclick="switchTab('reportes')">Bandeja Reportes / Historial</button>
     </div>
 
     <main>
