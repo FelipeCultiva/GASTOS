@@ -196,8 +196,11 @@ table.reportes tr:hover{background:var(--gray-050);}
             <div class="field"><label>Jefe Inmediato</label><input type="text" id="sv-jefe" placeholder="Nombre de tu superior"></div>
           </div>
           <div class="grid-3" style="margin-bottom:14px;">
-            <div class="field"><label>Motivo de la Solicitud</label><input type="text" id="sv-motivo" placeholder="Ej. Comisión de apertura sucursal"></div>
-            <div class="field"><label>Monto Solicitado ($)</label><input type="number" id="sv-monto" min="1" placeholder="0.00"></div>
+            <div class="field"><label>Motivo de la Solicitud</label><input type="text" id="sv-motivo" placeholder="Ej. Visita de supervisión agencia..."></div>
+            <div class="field">
+              <label>Monto Solicitado ($)</label>
+              <input type="number" id="sv-monto" min="1" step="0.01" lang="es-MX" placeholder="0.00" onblur="if(this.value) this.value = parseFloat(this.value).toFixed(2);">
+            </div>
             <div class="field"><label>Caja para Entrega de Recursos</label><select id="sv-caja"><option value="">Seleccionar caja...</option></select></div>
           </div>
           <div style="display:flex; justify-content:flex-end; margin-top:18px;">
