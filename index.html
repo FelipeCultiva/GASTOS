@@ -116,7 +116,7 @@ table.reportes tr:hover{background:var(--gray-050);}
   <!-- ===================== MAIN SCREEN ===================== -->
   <div id="main-screen" class="hidden">
     <div id="topbar">
-      <div class="brand">MAS CON MENOS <span>| Módulo de Viáticos</span></div>
+      <div class="brand">MAS CON MENOS <span>| Suite Operativa</span></div>
       <div class="userinfo">
         <span id="userinfo-nombre"></span>
         <span id="userinfo-rol" class="role-badge"></span>
@@ -132,25 +132,35 @@ table.reportes tr:hover{background:var(--gray-050);}
 
     <main>
       <!-- ===================== TAB: NUEVO REPORTE GASTOS ===================== -->
-     <div class="card">
-      <h2>Periodo de comprobación</h2>
-      <div class="grid-3">
-        <div class="field">
-          <label>Desde</label>
-          <input type="date" id="periodo-desde" onchange="actualizarLimitesCalendario()">
+      <section id="tab-nuevo">
+        <div class="card">
+          <h2>Datos del colaborador</h2>
+          <div class="grid-4">
+            <div class="readonly-field"><div class="lbl">No. Colaborador</div><div class="val" id="emp-nro">—</div></div>
+            <div class="readonly-field"><div class="lbl">Nombre</div><div class="val" id="emp-nombre">—</div></div>
+            <div class="readonly-field"><div class="lbl">Puesto</div><div class="val" id="emp-puesto">—</div></div>
+            <div class="readonly-field"><div class="lbl">Centro de Costo</div><div class="val" id="emp-cc">—</div></div>
+          </div>
         </div>
-        <div class="field">
-          <label>Hasta</label>
-          <input type="date" id="periodo-hasta" onchange="actualizarLimitesCalendario()">
+        
+        <div class="card">
+          <h2>Periodo de comprobación</h2>
+          <div class="grid-3">
+            <div class="field">
+              <label>Desde</label>
+              <input type="date" id="periodo-desde" onchange="actualizarLimitesCalendario()">
+            </div>
+            <div class="field">
+              <label>Hasta</label>
+              <input type="date" id="periodo-hasta" onchange="actualizarLimitesCalendario()">
+            </div>
+            <div class="field">
+              <label>Motivo</label>
+              <input type="text" id="motivo" placeholder="Ej. Visita operativa Toluca">
+            </div>
+          </div>
         </div>
-        <div class="field">
-          <label>Motivo</label>
-          <input type="text" id="motivo" placeholder="Ej. Visita operativa Toluca">
-        </div>
-      </div>
-    </div>
 
-        <!-- NUEVA INTERFAZ: Carga de PDF Único Global para todo el Reporte -->
         <div class="card" style="background: var(--gold-100); border: 1px dashed var(--gold-600);">
           <h2>Evidencia Documental Completa (PDF Único Global)</h2>
           <p style="font-size: 12px; margin: 0 0 12px 0; color: var(--navy-800);">Escanea y concatena todas tus facturas y recibos en un solo archivo PDF para subirlo de forma general al reporte.</p>
@@ -237,7 +247,7 @@ table.reportes tr:hover{background:var(--gray-050);}
   </div>
 </div>
 
-<!-- ===================== MODAL DE REVISIÓN CON VISOR GLOBAL FIJO ===================== -->
+<!-- ===================== MODAL DE REVISIÓN ===================== -->
 <div id="detalle-modal" class="modal-overlay hidden" style="position:fixed; inset:0; background:rgba(11,37,69,0.55); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px;">
   <div class="split-modal-box">
     <div style="display:flex; justify-content:between; align-items:center; border-bottom:1px solid var(--gray-200); padding-bottom:10px;">
@@ -246,7 +256,6 @@ table.reportes tr:hover{background:var(--gray-050);}
     </div>
     
     <div class="split-modal-body">
-      <!-- Lado Izquierdo: Datos de Conceptos y Montos -->
       <div class="split-left">
         <table class="reportes" style="font-size:12px;">
           <thead><tr><th>Categoría</th><th>Concepto</th><th>Descripción</th><th>Agencia / Área</th><th>Monto</th></tr></thead>
@@ -261,8 +270,6 @@ table.reportes tr:hover{background:var(--gray-050);}
           </div>
         </div>
       </div>
-      
-      <!-- Lado Derecho: Visor del PDF Global del Reporte Completo -->
       <div class="split-right" id="pdf-viewer-pane"></div>
     </div>
   </div>
@@ -296,7 +303,10 @@ function formatFechaAmigable(fechaStr) {
   const partes = limpia.split('-'); 
   if (partes.length !== 3) return fechaStr; 
   const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-  if (parseInt(partes[1], 10) >= 1 && parseInt(partes[1], 10) <= 12) { return `${partes[2]}/${meses[parseInt(partes[1], 10) - 1]}/${partes[0]}`; }
+  try {
+    const mesIdx = parseInt(partes[1], 10) - 1;
+    if (mesIdx >= 0 && mesIdx < 12) { return `${partes[2]}/${meses[mesIdx]}/${partes[0]}`; }
+  } catch(e) {}
   return fechaStr;
 }
   
@@ -307,7 +317,7 @@ let rowSeq = 0;
 let editingId = null;
 let currentActiveReporteId = null;
 let currentActiveViaticoId = null;
-let pdfGlobalBase64String = ""; // Variable para guardar el PDF único del reporte
+let pdfGlobalBase64String = "";
 
 async function api(action, payload) {
   showLoading(true);
@@ -411,30 +421,10 @@ function switchTab(tab) {
   if(tab === 'reportes') { document.getElementById('tab-reportes').classList.remove('hidden'); document.getElementById('tab-btn-reportes').classList.add('active'); loadReportesYViaticos(); }
 }
 
-// Sincroniza los límites min/max de los inputs de fecha en las líneas de gasto
-function actualizarLimitesCalendario() {
-  // BLINDAJE CRÍTICO: Si no se ha cargado el catálogo (Bootstrap), detener ejecución
-  if (!BOOTSTRAP) return;
-  
-  // Re-renderizar la tabla para inyectar los nuevos límites min/max
-  renderItemsTable();
-}
-  
-  // Buscar todos los campos de fecha de las filas de gastos actuales y futuras
-  const inputsFecha = document.querySelectorAll('#items-tbody input[type="date"]');
-  inputsFecha.forEach(input => {
-    input.min = desde || '';
-    input.max = hasta || '';
-  });
-}
-  
-// ---------- Operación e Inyección Dinámica del Catálogo de Agencias ----------
-
 function addItemRow() {
   const id = 'row_' + (++rowSeq);
   ITEMS.push({ id, fecha: '', categoria: '', comprobante: '', concepto: '', descripcion: '', justificacion: '', agencia_area: '', monto: '' });
   renderItemsTable();
-  actualizarLimitesCalendario(); // CORRECCIÓN: Aplicar límites al instante a la nueva fila
 }
 
 function removeItemRow(id) { ITEMS = ITEMS.filter(it => it.id !== id); renderItemsTable(); }
@@ -443,11 +433,19 @@ function updateItem(id, field, value) {
   const it = ITEMS.find(i => i.id === id);
   if (!it) return;
   it[field] = value;
-  if (field === 'categoria') renderItemsTable();
-  else computeTotal();
+  if (field === 'categoria') {
+    it.concepto = '';
+    renderItemsTable();
+  } else {
+    computeTotal();
+  }
 }
 
-// Validador e inyector del archivo global del reporte completo
+function actualizarLimitesCalendario() {
+  if (!BOOTSTRAP) return;
+  renderItemsTable();
+}
+
 function processGlobalFile(inputElement) {
   const file = inputElement.files[0];
   if (!file) return;
@@ -468,14 +466,10 @@ function renderItemsTable() {
   const tbody = document.getElementById('items-tbody');
   tbody.innerHTML = '';
   
-  // Si no hay datos de sesión o catálogos, salir limpiamente sin arrojar error
-  if (!BOOTSTRAP) return; 
+  if (!BOOTSTRAP) return;
 
-  // Obtener los límites del encabezado temporal en tiempo real
   const desdeVal = document.getElementById('periodo-desde').value;
   const hastaVal = document.getElementById('periodo-hasta').value;
-
-  // ... (el resto del ciclo ITEMS.forEach y computeTotal se queda exactamente igual)
 
   ITEMS.forEach(it => {
     const tr = document.createElement('tr');
@@ -501,7 +495,6 @@ function renderItemsTable() {
       `<option value="${a}" ${it.agencia_area === a ? 'selected' : ''}>${a}</option>`
     ).join('');
 
-    // CORRECCIÓN: Inyectar min y max directamente en el string del HTML
     tr.innerHTML = `
       <td><input type="date" value="${it.fecha || ''}" min="${desdeVal}" max="${hastaVal}" onchange="updateItem('${it.id}','fecha',this.value)"></td>
       <td><select onchange="updateItem('${it.id}','categoria',this.value)"><option value="">...</option>${catOptions}</select></td>
@@ -519,79 +512,55 @@ function renderItemsTable() {
 }
 
 function computeTotal() {
-  const total = ITEMS.reduce((s, it) => s + (parseFloat(it.monto) || 0), 0);
-  document.getElementById('total-val').textContent = '$' + total.toLocaleString('es-MX', { minimumFractionDigits: 2 });
+  const total = ITEMS.reduce((s, it) => {
+    const m = parseFloat(it.monto);
+    return s + (isNaN(m) ? 0 : m);
+  }, 0);
+  document.getElementById('total-val').textContent = '$' + total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-
-// ---------- Envío de Solicitudes ----------
 
 async function submitReporte() {
   const desde = document.getElementById('periodo-desde').value;
   const hasta = document.getElementById('periodo-hasta').value;
   const motivo = document.getElementById('motivo').value.trim();
 
-  // 1. Validar encabezado obligatorio
-  if (!desde || !hasta || !motivo) {
-    return showToast("Por favor complementa el periodo (Desde / Hasta) y el motivo del reporte.", true);
-  }
-  if (ITEMS.length === 0) {
-    return showToast("Debe agregar al menos una línea de gasto.", true);
-  }
-  if (!pdfGlobalBase64String && !editingId) {
-    return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
-  }
+  if (!desde || !hasta || !motivo) return showToast("Por favor complementa el periodo (Desde / Hasta) y el motivo del reporte.", true);
+  if (ITEMS.length === 0) return showToast("Debe agregar al menos una línea de gasto.", true);
+  if (!pdfGlobalBase64String && !editingId) return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
 
-  // 2. Validar campos obligatorios fila por fila (Excepto Justificación)
   for (let i = 0; i < ITEMS.length; i++) {
     const it = ITEMS[i];
-    const n = i + 1; // Número de fila visual para el usuario
-
+    const n = i + 1;
     if (!it.fecha) return showToast(`Fila ${n}: La fecha del gasto es obligatoria.`, true);
     if (!it.categoria) return showToast(`Fila ${n}: Debe seleccionar una categoría.`, true);
     if (!it.comprobante) return showToast(`Fila ${n}: Debe seleccionar un tipo de comprobante.`, true);
     if (!it.concepto) return showToast(`Fila ${n}: Debe seleccionar un concepto.`, true);
     if (!it.descripcion || !it.descripcion.trim()) return showToast(`Fila ${n}: La descripción del gasto es obligatoria.`, true);
     if (!it.agencia_area) return showToast(`Fila ${n}: Debe seleccionar una Agencia / Área del catálogo.`, true);
-    
     const montoNum = parseFloat(it.monto);
-    if (isNaN(montoNum) || montoNum <= 0) {
-      return showToast(`Fila ${n}: El monto debe ser un número válido y mayor a cero.`, true);
-    }
-
-    // 3. Doble validación de seguridad para fechas fuera de rango
-    if (it.fecha < desde || it.fecha > hasta) {
-      return showToast(`Fila ${n}: La fecha del gasto (${formatFechaAmigable(it.fecha)}) está fuera del periodo declarado (${formatFechaAmigable(desde)} al ${formatFechaAmigable(hasta)}).`, true);
-    }
+    if (isNaN(montoNum) || montoNum <= 0) return showToast(`Fila ${n}: El monto debe ser un número válido y mayor a cero.`, true);
+    if (it.fecha < desde || it.fecha > hasta) return showToast(`Fila ${n}: La fecha está fuera del periodo declarado (${formatFechaAmigable(desde)} al ${formatFechaAmigable(hasta)}).`, true);
   }
 
-  // Si todas las validaciones pasan, se procede con el envío estructurado
   const payload = {
-    clave_empleado: BOOTSTRAP.empleado.clave, 
-    nombre_empleado: BOOTSTRAP.empleado.nombre,
-    puesto: BOOTSTRAP.empleado.puesto, 
-    area: BOOTSTRAP.empleado.sucursal_area,
-    centro_costo: BOOTSTRAP.empleado.centro_costo, 
-    periodo_desde: desde, 
-    periodo_hasta: hasta,
-    motivo: motivo, 
-    items: ITEMS, 
-    pdfGlobalBase64: pdfGlobalBase64String
+    clave_empleado: BOOTSTRAP.empleado.clave, nombre_empleado: BOOTSTRAP.empleado.nombre,
+    puesto: BOOTSTRAP.empleado.puesto, area: BOOTSTRAP.empleado.sucursal_area,
+    centro_costo: BOOTSTRAP.empleado.centro_costo, periodo_desde: desde, periodo_hasta: hasta,
+    motivo: motivo, items: ITEMS, pdfGlobalBase64: pdfGlobalBase64String
   };
 
   try {
     if (editingId) {
       payload.id_reporte = editingId;
       await api('updateReporte', payload);
-      showToast("Reporte corregido y reenviado con éxito.");
+      showToast("Reporte corregido y reenviado.");
     } else {
       await api('submitReporte', payload);
-      showToast("Reporte unificado enviado a revisión correctamente.");
+      showToast("Reporte unificado enviado con éxito.");
     }
     cancelEdit();
     switchTab('reportes');
-  } catch (e) { 
-    showToast(e.message, true); 
-  }
+  } catch (e) { showToast(e.message, true); }
 }
 
 async function submitSolicitudViaticos() {
@@ -664,12 +633,9 @@ async function loadReportesYViaticos() {
   } catch (e) { showToast("Error al cargar bandejas.", true); }
 }
 
-// ---------- Visor Fijo Global del PDF Único del Reporte ----------
-
 async function openReporteDetalle(idReporte, puedeDictaminar) {
   currentActiveReporteId = idReporte;
   document.getElementById('detalle-titulo').textContent = `Auditoría General - Folio: ${idReporte}`;
-  
   if(puedeDictaminar) document.getElementById('admin-actions-block').classList.remove('hidden');
   else document.getElementById('admin-actions-block').classList.add('hidden');
 
@@ -687,19 +653,14 @@ async function openReporteDetalle(idReporte, puedeDictaminar) {
       tbody.appendChild(tr);
     });
 
-    // CORRECCIÓN: Renderizar el documento completo de Drive de forma fija en el panel de la derecha
     const pane = document.getElementById('pdf-viewer-pane');
     if (res.url_pdf_global) {
       const fileId = res.url_pdf_global.match(/id=([^&]+)/) || res.url_pdf_global.match(/\/file\/d\/([^/]+)/);
-      if(fileId) {
-        pane.innerHTML = `<iframe src="https://drive.google.com/file/d/${fileId[1]}/preview" class="pdf-iframe" allow="autoplay"></iframe>`;
-      } else {
-        pane.innerHTML = `<span style="color:var(--red-700); padding:20px;">Error en el enlace del documento.</span>`;
-      }
+      if(fileId) { pane.innerHTML = `<iframe src="https://drive.google.com/file/d/${fileId[1]}/preview" class="pdf-iframe" allow="autoplay"></iframe>`; }
+      else { pane.innerHTML = `<span style="color:var(--red-700); padding:20px;">Error en el enlace del documento.</span>`; }
     } else {
-      pane.innerHTML = `<span style="color:var(--gray-500); padding:20px; font-family:monospace; text-align:center;">El colaborador no adjuntó archivo PDF global en este reporte.</span>`;
+      pane.innerHTML = `<span style="color:var(--gray-500); padding:20px; font-family:monospace; text-align:center;">Sin archivo PDF unificado.</span>`;
     }
-
     document.getElementById('detalle-modal').classList.remove('hidden');
   } catch(e) { showToast("Error al recuperar los conceptos del folio.", true); }
 }
@@ -724,9 +685,7 @@ async function editRechazado(idReporte) {
     editingId = idReporte;
     document.getElementById('submit-btn').textContent = 'Guardar y Reenviar Reporte';
     document.getElementById('cancel-edit-btn').classList.remove('hidden');
-    if(res.url_pdf_global) {
-      document.getElementById('global-pdf-name').textContent = "Contiene PDF previo en Drive. Puedes subir uno nuevo si deseas reemplazarlo.";
-    }
+    if(res.url_pdf_global) { document.getElementById('global-pdf-name').textContent = "Contiene PDF previo en Drive."; }
     switchTab('nuevo'); renderItemsTable();
   } catch(e) { showToast("Error al precargar el borrador.", true); }
 }
