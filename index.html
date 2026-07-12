@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MAS CON MENOS | Gestión de Gastos y Viáticos</title>
+<title>MAS CON MENOS | Gestión Unificada</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -25,15 +25,14 @@ input,select,textarea{font-family:inherit;}
 #app{min-height:100vh;display:flex;flex-direction:column;}
 .hidden{display:none !important;}
 
-/* ---------- Login ---------- */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,var(--navy-900),var(--navy-700));}
 .login-card{width:380px;background:var(--white);border-radius:10px;box-shadow:0 20px 50px rgba(11,37,69,0.35);padding:34px 30px;}
 .login-brand{font-family:'Libre Franklin',sans-serif;font-weight:800;font-size:20px;color:var(--navy-900);text-align:center;margin-bottom:2px;}
-.login-sub{text-align:center;font-size:12px;color:var(--gray-500);margin-bottom:26px;letter-spacing:0.5px;text-transform:uppercase;}
+.login-sub{text-align:center;font-size:12px;color:var(--gray-500);margin-bottom:26px;text-transform:uppercase;}
 .field{margin-bottom:16px;}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:5px;}
 .field input, .field select{width:100%;padding:10px 12px;border:1px solid var(--gray-200);border-radius:6px;font-size:14px;background:var(--gray-050);}
-.field input:focus, .field select:focus{outline:2px solid var(--steel-600);outline-offset:1px;background:var(--white);}
+.field input:focus, .field select:focus{outline:2px solid var(--steel-600);background:var(--white);}
 .btn{border:none;border-radius:6px;padding:11px 18px;font-size:14px;font-weight:600;transition:filter .15s;}
 .btn:hover{filter:brightness(1.08);}
 .btn-primary{background:var(--navy-900);color:var(--white);width:100%;}
@@ -44,7 +43,6 @@ input,select,textarea{font-family:inherit;}
 .error-msg{background:var(--red-100);color:var(--red-700);border-radius:6px;padding:9px 12px;font-size:12.5px;margin-bottom:14px;display:none;}
 .error-msg.show{display:block;}
 
-/* ---------- Layout Navigation ---------- */
 #topbar{background:var(--navy-900);color:var(--white);display:flex;align-items:center;justify-content:space-between;padding:14px 26px;}
 #topbar .brand{font-family:'Libre Franklin',sans-serif;font-weight:800;font-size:16px;}
 #topbar .brand span{color:var(--gold-500);}
@@ -64,7 +62,6 @@ main{flex:1;max-width:1280px;width:100%;margin:0 auto;padding:24px 26px 60px;}
 .readonly-field .lbl{font-size:10.5px;color:var(--gray-500);text-transform:uppercase;margin-bottom:3px;}
 .readonly-field .val{font-weight:600;color:var(--navy-900);font-family:'IBM Plex Mono',monospace;font-size:12.5px;}
 
-/* ---------- Tables ---------- */
 #items-wrap{overflow-x:auto;}
 table.items{width:100%;border-collapse:collapse;min-width:1150px;}
 table.items th{background:var(--navy-900);color:var(--white);font-size:11px;text-transform:uppercase;padding:9px 8px;text-align:left;}
@@ -81,18 +78,17 @@ table.reportes tr:hover{background:var(--gray-050);}
 .estatus-AUTORIZADO{background:var(--green-100);color:var(--green-700);}
 .estatus-RECHAZADO{background:var(--red-100);color:var(--red-700);}
 
-/* ---------- Split Panel Modal (Visor PDF Incorporado) ---------- */
 .split-modal-box{background:var(--white);border-radius:10px;width:95vw;max-width:1400px;height:90vh;display:flex;flex-direction:column;padding:20px;overflow:hidden;}
 .split-modal-body{display:flex;flex:1;gap:20px;overflow:hidden;margin-top:14px;}
 .split-left{flex:1;overflow-y:auto;padding-right:5px;}
 .split-right{flex:1;background:var(--gray-050);border:1px solid var(--gray-200);border-radius:8px;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;}
 .pdf-iframe{width:100%;height:100%;border:none;border-radius:7px;}
 
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy-900);color:var(--white);padding:12px 20px;border-radius:8px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.25);z-index:1000;display:none;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy-900);color:var(--white);padding:12px 20px;border-radius:8px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.25);z-index:3000;display:none;}
 .toast.show{display:block;}
 .toast.error{background:var(--red-700);}
-.loading-overlay{position:fixed;inset:0;background:rgba(245,246,248,0.85);display:flex;align-items:center;justify-content:center;z-index:2000;font-family:'IBM Plex Mono',monospace;color:var(--navy-900);}
-.clip-btn{background:var(--gray-200);border:1px solid var(--gray-400);border-radius:4px;padding:4px 8px;font-size:11px;font-weight:600;}
+.loading-overlay{position:fixed;inset:0;background:rgba(245,246,248,0.85);display:flex;align-items:center;justify-content:center;z-index:4000;font-family:'IBM Plex Mono',monospace;color:var(--navy-900);}
+.clip-btn{background:var(--gray-200);border:1px solid var(--gray-400);border-radius:4px;padding:6px 12px;font-size:12px;font-weight:600;}
 .clip-btn.loaded{background:var(--green-100);color:var(--green-700);border-color:var(--green-700);}
 </style>
 </head>
@@ -120,7 +116,7 @@ table.reportes tr:hover{background:var(--gray-050);}
   <!-- ===================== MAIN SCREEN ===================== -->
   <div id="main-screen" class="hidden">
     <div id="topbar">
-      <div class="brand">MAS CON MENOS <span>| Suite Operativa</span></div>
+      <div class="brand">MAS CON MENOS <span>| Módulo de Viáticos</span></div>
       <div class="userinfo">
         <span id="userinfo-nombre"></span>
         <span id="userinfo-rol" class="role-badge"></span>
@@ -154,20 +150,31 @@ table.reportes tr:hover{background:var(--gray-050);}
             <div class="field"><label>Motivo</label><input type="text" id="motivo" placeholder="Ej. Visita operativa Toluca"></div>
           </div>
         </div>
+
+        <!-- NUEVA INTERFAZ: Carga de PDF Único Global para todo el Reporte -->
+        <div class="card" style="background: var(--gold-100); border: 1px dashed var(--gold-600);">
+          <h2>Evidencia Documental Completa (PDF Único Global)</h2>
+          <p style="font-size: 12px; margin: 0 0 12px 0; color: var(--navy-800);">Escanea y concatena todas tus facturas y recibos en un solo archivo PDF para subirlo de forma general al reporte.</p>
+          <div style="display:flex; align-items:center; gap:14px;">
+            <button id="global-clip-btn" class="clip-btn" onclick="document.getElementById('global-pdf-file').click()">📎 Cargar PDF del Reporte</button>
+            <input type="file" id="global-pdf-file" style="display:none;" accept="application/pdf" onchange="processGlobalFile(this)">
+            <span id="global-pdf-name" style="font-size:12.5px; font-weight:600; color:var(--green-700);">Sin archivo cargado</span>
+          </div>
+        </div>
+
         <div class="card">
           <h2>Detalle de gastos</h2>
           <div id="items-wrap">
             <table class="items">
               <thead>
                 <tr>
-                  <th style="width:120px;">Fecha</th>
-                  <th style="width:120px;">Categoría</th>
-                  <th style="width:120px;">Comprobante</th>
+                  <th style="width:130px;">Fecha</th>
+                  <th style="width:130px;">Categoría</th>
+                  <th style="width:130px;">Comprobante</th>
                   <th style="width:180px;">Concepto</th>
-                  <th style="width:180px;">Descripción</th>
+                  <th style="width:200px;">Descripción</th>
                   <th style="width:150px;">Justificación</th>
-                  <th style="width:150px;">Agencia / Área</th>
-                  <th style="width:130px;">Comprobante PDF</th>
+                  <th style="width:200px;">Agencia / Área (Catálogo)</th>
                   <th style="width:110px;">Monto</th>
                   <th style="width:35px;"></th>
                 </tr>
@@ -196,11 +203,8 @@ table.reportes tr:hover{background:var(--gray-050);}
             <div class="field"><label>Jefe Inmediato</label><input type="text" id="sv-jefe" placeholder="Nombre de tu superior"></div>
           </div>
           <div class="grid-3" style="margin-bottom:14px;">
-            <div class="field"><label>Motivo de la Solicitud</label><input type="text" id="sv-motivo" placeholder="Ej. Visita de supervisión agencia..."></div>
-            <div class="field">
-              <label>Monto Solicitado ($)</label>
-              <input type="number" id="sv-monto" min="1" step="0.01" lang="es-MX" placeholder="0.00" onblur="if(this.value) this.value = parseFloat(this.value).toFixed(2);">
-            </div>
+            <div class="field"><label>Motivo de la Solicitud</label><input type="text" id="sv-motivo" placeholder="Ej. Comisión de apertura de sucursal"></div>
+            <div class="field"><label>Monto Solicitado ($)</label><input type="number" id="sv-monto" min="1" step="0.01" lang="es-MX" placeholder="0.00" onblur="if(this.value) this.value = parseFloat(this.value).toFixed(2);"></div>
             <div class="field"><label>Caja para Entrega de Recursos</label><select id="sv-caja"><option value="">Seleccionar caja...</option></select></div>
           </div>
           <div style="display:flex; justify-content:flex-end; margin-top:18px;">
@@ -234,24 +238,24 @@ table.reportes tr:hover{background:var(--gray-050);}
   </div>
 </div>
 
-<!-- ===================== MODAL DIVIDIDO ===================== -->
+<!-- ===================== MODAL DE REVISIÓN CON VISOR GLOBAL FIJO ===================== -->
 <div id="detalle-modal" class="modal-overlay hidden" style="position:fixed; inset:0; background:rgba(11,37,69,0.55); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px;">
   <div class="split-modal-box">
     <div style="display:flex; justify-content:between; align-items:center; border-bottom:1px solid var(--gray-200); padding-bottom:10px;">
-      <h3 id="detalle-titulo" style="margin:0; font-family:'Libre Franklin'; color:var(--navy-900);">Revisión de Gastos Integrada</h3>
+      <h3 id="detalle-titulo" style="margin:0; font-family:'Libre Franklin'; color:var(--navy-900);">Revisión Contable Colectiva</h3>
       <button class="btn btn-outline btn-sm" onclick="closeModal()" style="margin-left:auto;">Cerrar Panel ×</button>
     </div>
-    <div id="detalle-comentario" style="display:none; background:var(--red-100); color:var(--red-700); padding:8px 12px; font-size:12.5px; border-radius:6px; margin-top:10px;"></div>
     
     <div class="split-modal-body">
+      <!-- Lado Izquierdo: Datos de Conceptos y Montos -->
       <div class="split-left">
         <table class="reportes" style="font-size:12px;">
-          <thead><tr><th>Categoría</th><th>Concepto</th><th>Descripción</th><th>Monto</th><th>Evidencia</th></tr></thead>
+          <thead><tr><th>Categoría</th><th>Concepto</th><th>Descripción</th><th>Agencia / Área</th><th>Monto</th></tr></thead>
           <tbody id="detalle-tbody"></tbody>
         </table>
         
         <div id="admin-actions-block" class="hidden" style="margin-top:20px; border-top:2px solid var(--gray-200); padding-top:15px;">
-          <textarea id="admin-comment" rows="2" style="width:100%; border-radius:6px; padding:8px; border:1px solid var(--gray-200); margin-bottom:10px;" placeholder="Escribe observaciones o motivo de rechazo aquí..."></textarea>
+          <textarea id="admin-comment" rows="2" style="width:100%; border-radius:6px; padding:8px; border:1px solid var(--gray-200); margin-bottom:10px;" placeholder="Observaciones de dictaminación obligatorias..."></textarea>
           <div style="display:flex; gap:10px; justify-content:flex-end;">
             <button class="btn btn-danger btn-sm" onclick="dictaminarReporte('RECHAZADO')">Rechazar Reporte</button>
             <button class="btn btn-gold btn-sm" onclick="dictaminarReporte('AUTORIZADO')">Autorizar Reporte</button>
@@ -259,14 +263,13 @@ table.reportes tr:hover{background:var(--gray-050);}
         </div>
       </div>
       
-      <div class="split-right" id="pdf-viewer-pane">
-        <span style="color:var(--gray-500); font-size:13px; font-family:monospace; text-align:center; padding:20px;">Selecciona una línea de gasto que posea archivo adjunto para previsualizar aquí su documento.</span>
-      </div>
+      <!-- Lado Derecho: Visor del PDF Global del Reporte Completo -->
+      <div class="split-right" id="pdf-viewer-pane"></div>
     </div>
   </div>
 </div>
 
-<!-- ===================== MODAL DE ACCIONES PARA VIÁTICOS ===================== -->
+<!-- ===================== MODAL VIÁTICOS ===================== -->
 <div id="viatico-modal" class="modal-overlay hidden" style="position:fixed; inset:0; background:rgba(11,37,69,0.55); display:flex; align-items:center; justify-content:center; z-index:150;">
   <div class="card" style="width:450px;">
     <h3>Dictaminar Anticipo de Viáticos</h3>
@@ -285,7 +288,7 @@ table.reportes tr:hover{background:var(--gray-050);}
 
 <script>
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwHw5WM9JrDksdyL_s2rhwn69oKUXKSYIlxH_2sQVn4D4HRIwdju9RBBWcI5UywqE25/exec"
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwWc_GtufPuX_tTKJvS-nIXaCUZDhIVbNwxlFx8A_PguKsrNSA7Ux4jg-ySaGO9LObi/exec"
 };
 
 function formatFechaAmigable(fechaStr) {
@@ -294,10 +297,7 @@ function formatFechaAmigable(fechaStr) {
   const partes = limpia.split('-'); 
   if (partes.length !== 3) return fechaStr; 
   const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-  const anio = partes[0];
-  const mesIdx = parseInt(partes[1], 10) - 1;
-  const dia = partes[2];
-  if (mesIdx >= 0 && mesIdx < 12) { return `${dia}/${meses[mesIdx]}/${anio}`; }
+  if (parseInt(partes[1], 10) >= 1 && parseInt(partes[1], 10) <= 12) { return `${partes[2]}/${meses[parseInt(partes[1], 10) - 1]}/${partes[0]}`; }
   return fechaStr;
 }
   
@@ -308,6 +308,7 @@ let rowSeq = 0;
 let editingId = null;
 let currentActiveReporteId = null;
 let currentActiveViaticoId = null;
+let pdfGlobalBase64String = ""; // Variable para guardar el PDF único del reporte
 
 async function api(action, payload) {
   showLoading(true);
@@ -333,8 +334,6 @@ function showToast(msg, isError) {
   setTimeout(() => t.classList.remove('show'), 4000);
 }
 
-// ---------- Gestión de Sesiones CORREGIDA ----------
-
 async function doLogin() {
   const usuario = document.getElementById('login-usuario').value.trim();
   const password = document.getElementById('login-password').value;
@@ -344,20 +343,15 @@ async function doLogin() {
   if (!usuario || !password) { errBox.textContent = "Campos requeridos."; errBox.classList.add('show'); return; }
   try {
     const data = await api('login', { usuario, password });
-    
-    // CORRECCIÓN: Garantizar inyección inmediata y limpia de variables tipadas del perfil
     SESSION = {
       usuario: data.usuario,
       rol: String(data.rol).trim().toUpperCase(),
       clave_empleado: data.clave_empleado ? String(data.clave_empleado).trim().toUpperCase() : "",
       permisos: data.permisos || { revisa_gastos: false, revisa_viaticos: false }
     };
-    
     sessionStorage.setItem('mcm_session_v2', JSON.stringify(SESSION));
     await runApplication();
-  } catch (e) {
-    errBox.textContent = e.message || "Error de red/login."; errBox.classList.add('show');
-  }
+  } catch (e) { errBox.textContent = e.message || "Error."; errBox.classList.add('show'); }
 }
 
 function logout() {
@@ -378,25 +372,17 @@ async function runApplication() {
     document.getElementById('sv-jefe').value = localStorage.getItem('mcm_jefe_' + SESSION.clave_empleado);
   }
 
-  const boxSelect = document.getElementById('sv-caja');
-  boxSelect.innerHTML = '<option value="">Seleccionar caja...</option>';
-  (BOOTSTRAP.cajas || []).forEach(c => {
-    boxSelect.innerHTML += `<option value="${c}">${c}</option>`;
-  });
+  document.getElementById('sv-caja').innerHTML = '<option value="">Seleccionar caja...</option>';
+  (BOOTSTRAP.cajas || []).forEach(c => { document.getElementById('sv-caja').innerHTML += `<option value="${c}">${c}</option>`; });
 
-  // CORRECCIÓN: Control asíncrono estricto de visibilidad de los menús 
   if (SESSION.clave_empleado && SESSION.clave_empleado.trim() !== "") {
     document.getElementById('tab-btn-nuevo').classList.remove('hidden');
     document.getElementById('tab-btn-solicitud').classList.remove('hidden');
-    
-    if (!SESSION.permisos.revisa_gastos && !SESSION.permisos.revisa_viaticos) {
-      document.getElementById('tab-btn-reportes').textContent = "Mis Solicitudes / Historial";
-    } else {
-      document.getElementById('tab-btn-reportes').textContent = "Bandeja Reportes / Historial";
-    }
-    
+    document.getElementById('tab-btn-reportes').textContent = (!SESSION.permisos.revisa_gastos && !SESSION.permisos.revisa_viaticos) ? "Mis Solicitudes / Historial" : "Bandeja Reportes / Historial";
     fillEmpleadoCard();
-    ITEMS = []; editingId = null;
+    ITEMS = []; editingId = null; pdfGlobalBase64String = "";
+    document.getElementById('global-pdf-name').textContent = "Sin archivo cargado";
+    document.getElementById('global-clip-btn').className = "clip-btn";
     addItemRow();
     switchTab('nuevo');
   } else {
@@ -423,18 +409,14 @@ function switchTab(tab) {
 
   if(tab === 'nuevo') { document.getElementById('tab-nuevo').classList.remove('hidden'); document.getElementById('tab-btn-nuevo').classList.add('active'); }
   if(tab === 'solicitud') { document.getElementById('tab-solicitud').classList.remove('hidden'); document.getElementById('tab-btn-solicitud').classList.add('active'); }
-  if(tab === 'reportes') { 
-    document.getElementById('tab-reportes').classList.remove('hidden'); 
-    document.getElementById('tab-btn-reportes').classList.add('active');
-    loadReportesYViaticos();
-  }
+  if(tab === 'reportes') { document.getElementById('tab-reportes').classList.remove('hidden'); document.getElementById('tab-btn-reportes').classList.add('active'); loadReportesYViaticos(); }
 }
 
-// ---------- Operación de Líneas de Gastos ----------
+// ---------- Operación e Inyección Dinámica del Catálogo de Agencias ----------
 
 function addItemRow() {
   const id = 'row_' + (++rowSeq);
-  ITEMS.push({ id, fecha: '', categoria: '', comprobante: '', concepto: '', descripcion: '', justificacion: '', agencia_area: '', monto: '', pdfBase64: '', url_pdf: '' });
+  ITEMS.push({ id, fecha: '', categoria: '', comprobante: '', concepto: '', descripcion: '', justificacion: '', agencia_area: '', monto: '' });
   renderItemsTable();
 }
 
@@ -448,30 +430,19 @@ function updateItem(id, field, value) {
   else computeTotal();
 }
 
-function processFile(id, inputElement) {
+// Validador e inyector del archivo global del reporte completo
+function processGlobalFile(inputElement) {
   const file = inputElement.files[0];
   if (!file) return;
-  
-  if (file.type !== "application/pdf") {
-    showToast("Únicamente se admiten archivos en formato PDF nativo.", true);
-    inputElement.value = ''; return;
-  }
-  
-  const pesoMaximoBytes = BOOTSTRAP.limite_pdf_mb * 1024 * 1024;
-  if (file.size > pesoMaximoBytes) {
-    showToast(`Infracción de peso. El archivo supera los ${BOOTSTRAP.limite_pdf_mb} MB configurados en el sistema.`, true);
-    inputElement.value = ''; return;
-  }
+  if (file.type !== "application/pdf") { showToast("Permitido solo formato PDF nativo.", true); inputElement.value = ''; return; }
+  if (file.size > (BOOTSTRAP.limite_pdf_mb * 1024 * 1024)) { showToast(`Excede el límite de ${BOOTSTRAP.limite_pdf_mb} MB.`, true); inputElement.value = ''; return; }
 
   const reader = new FileReader();
   reader.onload = function(e) {
-    const it = ITEMS.find(i => i.id === id);
-    if(it) {
-      it.pdfBase64 = e.target.result;
-      const btn = document.getElementById('clip_' + id);
-      if (btn) { btn.textContent = "📎 Adjunto"; btn.classList.add('loaded'); }
-      showToast("PDF validado y cargado en búfer local.");
-    }
+    pdfGlobalBase64String = e.target.result;
+    document.getElementById('global-pdf-name').textContent = `📎 ${file.name} listo para envío`;
+    document.getElementById('global-clip-btn').className = "clip-btn loaded";
+    showToast("PDF Global indexado con éxito.");
   };
   reader.readAsDataURL(file);
 }
@@ -490,6 +461,9 @@ function renderItemsTable() {
     if (it.categoria === 'ACTIVIDAD') conceptosFiltro = BOOTSTRAP.conceptos.ACTIVIDAD || [];
     const concOptions = conceptosFiltro.map(c => `<option value="${c}" ${it.concepto === c ? 'selected' : ''}>${c}</option>`).join('');
 
+    // CORRECCIÓN: Inyección del select dinámico mapeando el catálogo completo de agencias
+    const agenciaOptions = (BOOTSTRAP.agencias || []).map(a => `<option value="${a}" ${it.agencia_area === a ? 'selected' : ''}>${a}</option>`).join('');
+
     tr.innerHTML = `
       <td><input type="date" value="${it.fecha}" onchange="updateItem('${it.id}','fecha',this.value)"></td>
       <td><select onchange="updateItem('${it.id}','categoria',this.value)"><option value="">...</option>${catOptions}</select></td>
@@ -497,13 +471,7 @@ function renderItemsTable() {
       <td><select onchange="updateItem('${it.id}','concepto',this.value)" ${!it.categoria?'disabled':''}><option value="">Seleccionar...</option>${concOptions}</select></td>
       <td><input type="text" value="${it.descripcion}" placeholder="Detalle..." onchange="updateItem('${it.id}','descripcion',this.value)"></td>
       <td><input type="text" value="${it.justificacion}" placeholder="Opcional..." onchange="updateItem('${it.id}','justificacion',this.value)"></td>
-      <td><input type="text" value="${it.agencia_area}" placeholder="Buscar área..." onchange="updateItem('${it.id}','agencia_area',this.value)"></td>
-      <td style="text-align:center;">
-        <button id="clip_${it.id}" class="clip-btn ${it.pdfBase64 || it.url_pdf ? 'loaded':''}" onclick="document.getElementById('file_inv_${it.id}').click()">
-          ${it.pdfBase64 || it.url_pdf ? '📎 Adjunto' : 'Cargar PDF'}
-        </button>
-        <input type="file" id="file_inv_${it.id}" style="display:none;" accept="application/pdf" onchange="processFile('${it.id}', this)">
-      </td>
+      <td><select onchange="updateItem('${it.id}','agencia_area',this.value)"><option value="">Seleccionar área...</option>${agenciaOptions}</select></td>
       <td><input type="number" step="0.01" value="${it.monto}" placeholder="0.00" style="text-align:right;" onchange="updateItem('${it.id}','monto',this.value)"></td>
       <td><button style="background:none; border:none; color:var(--red-700); font-weight:bold;" onclick="removeItemRow('${it.id}')">×</button></td>
     `;
@@ -517,7 +485,7 @@ function computeTotal() {
   document.getElementById('total-val').textContent = '$' + total.toLocaleString('es-MX', { minimumFractionDigits: 2 });
 }
 
-// ---------- Envío de Solicitudes y Comprobaciones ----------
+// ---------- Envío de Solicitudes ----------
 
 async function submitReporte() {
   const desde = document.getElementById('periodo-desde').value;
@@ -526,28 +494,27 @@ async function submitReporte() {
 
   if (!desde || !hasta || !motivo) return showToast("Por favor complementa el encabezado temporal y motivo.", true);
   if (ITEMS.length === 0) return showToast("Agrega líneas de gasto.", true);
+  if (!pdfGlobalBase64String && !editingId) return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
 
   const payload = {
     clave_empleado: BOOTSTRAP.empleado.clave, nombre_empleado: BOOTSTRAP.empleado.nombre,
     puesto: BOOTSTRAP.empleado.puesto, area: BOOTSTRAP.empleado.sucursal_area,
     centro_costo: BOOTSTRAP.empleado.centro_costo, periodo_desde: desde, periodo_hasta: hasta,
-    motivo: motivo, items: ITEMS
+    motivo: motivo, items: ITEMS, pdfGlobalBase64: pdfGlobalBase64String
   };
 
   try {
     if (editingId) {
       payload.id_reporte = editingId;
       await api('updateReporte', payload);
-      showToast("Reporte corregido reenviado con éxito.");
+      showToast("Reporte corregido y reenviado.");
     } else {
       await api('submitReporte', payload);
-      showToast("Reporte integral guardado y enviado a revisión.");
+      showToast("Reporte unificado enviado con éxito.");
     }
     cancelEdit();
     switchTab('reportes');
-  } catch (e) {
-    showToast(e.message, true);
-  }
+  } catch (e) { showToast(e.message, true); }
 }
 
 async function submitSolicitudViaticos() {
@@ -559,54 +526,43 @@ async function submitSolicitudViaticos() {
   const caja = document.getElementById('sv-caja').value;
 
   if(!desde || !hasta || !jefe || !motivo || !monto || !caja) return showToast("Completa todos los campos obligatorios.", true);
-  if(monto <= 0) return showToast("El monto debe ser superior a cero.", true);
-
   localStorage.setItem('mcm_jefe_' + SESSION.clave_empleado, jefe);
 
-  const payload = {
-    clave_empleado: BOOTSTRAP.empleado.clave, nombre_empleado: BOOTSTRAP.empleado.nombre,
-    puesto: BOOTSTRAP.empleado.puesto, area: BOOTSTRAP.empleado.sucursal_area,
-    centro_costo: BOOTSTRAP.empleado.centro_costo, periodo_desde: desde, periodo_hasta: hasta,
-    motivo: motivo, jefe_inmediato: jefe, monto_solicitado: monto, caja_entrega: caja
-  };
-
   try {
-    const res = await api('submitViaticos', payload);
-    showToast("Solicitud de anticipo procesada: " + res.id_solicitud);
-    document.getElementById('sv-motivo').value = '';
-    document.getElementById('sv-monto').value = '';
-    document.getElementById('sv-caja').value = '';
+    const res = await api('submitViaticos', {
+      clave_empleado: BOOTSTRAP.empleado.clave, nombre_empleado: BOOTSTRAP.empleado.nombre,
+      puesto: BOOTSTRAP.empleado.puesto, area: BOOTSTRAP.empleado.sucursal_area,
+      centro_costo: BOOTSTRAP.empleado.centro_costo, periodo_desde: desde, periodo_hasta: hasta,
+      motivo: motivo, jefe_inmediato: jefe, monto_solicitado: monto, caja_entrega: caja
+    });
+    showToast("Solicitud procesada: " + res.id_solicitud);
+    document.getElementById('sv-motivo').value = ''; document.getElementById('sv-monto').value = '';
     switchTab('reportes');
   } catch(e) { showToast(e.message, true); }
 }
 
 function cancelEdit() {
-  editingId = null;
+  editingId = null; pdfGlobalBase64String = "";
   document.getElementById('submit-btn').textContent = 'Enviar Reporte a Revisión';
   document.getElementById('cancel-edit-btn').classList.add('hidden');
-  document.getElementById('motivo').value = '';
-  document.getElementById('periodo-desde').value = '';
-  document.getElementById('periodo-hasta').value = '';
+  document.getElementById('motivo').value = ''; document.getElementById('periodo-desde').value = ''; document.getElementById('periodo-hasta').value = '';
+  document.getElementById('global-pdf-name').textContent = "Sin archivo cargado";
+  document.getElementById('global-clip-btn').className = "clip-btn";
   ITEMS = []; addItemRow();
 }
-
-// ---------- Consultas y Renderizado de Bandejas ----------
 
 async function loadReportesYViaticos() {
   try {
     const repData = await api('listReportes', { rol: SESSION.rol, clave_empleado: SESSION.clave_empleado });
-    const tbodyR = document.getElementById('reportes-tbody');
-    tbodyR.innerHTML = '';
+    const tbodyR = document.getElementById('reportes-tbody'); tbodyR.innerHTML = '';
     
     repData.reportes.forEach(r => {
       const puedeDictaminar = (SESSION.rol === 'ADM_FULL' || SESSION.rol === 'ADM_GAST') && r.estatus === 'ENVIADO';
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><b>${r.id_reporte}</b></td>
-        <td>${r.nombre_empleado}</td>
+        <td><b>${r.id_reporte}</b></td><td>${r.nombre_empleado}</td>
         <td>${formatFechaAmigable(r.periodo_desde)} / ${formatFechaAmigable(r.periodo_hasta)}</td>
-        <td>${r.motivo}</td>
-        <td>$${Number(r.total_gastos).toLocaleString('es-MX')}</td>
+        <td>${r.motivo}</td><td>$${Number(r.total_gastos).toLocaleString('es-MX')}</td>
         <td><span class="estatus-pill estatus-${r.estatus}">${r.estatus}</span></td>
         <td>
           <button class="btn btn-outline btn-sm" onclick="openReporteDetalle('${r.id_reporte}', ${puedeDictaminar})">Revisar</button>
@@ -617,38 +573,28 @@ async function loadReportesYViaticos() {
     });
 
     const viaData = await api('listViaticos', { rol: SESSION.rol, clave_empleado: SESSION.clave_empleado });
-    const tbodyV = document.getElementById('viaticos-tbody');
-    tbodyV.innerHTML = '';
-    
+    const tbodyV = document.getElementById('viaticos-tbody'); tbodyV.innerHTML = '';
     viaData.solicitudes.forEach(v => {
       const puedeDictaminarV = (SESSION.rol === 'ADM_FULL' || SESSION.rol === 'ADM_VIAT') && v.estatus === 'ENVIADO';
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><b>${v.id_solicitud}</b></td>
-        <td>${v.nombre_empleado}</td>
-        <td>${formatFechaAmigable(v.periodo_desde)} al ${formatFechaAmigable(v.periodo_hasta)}</td>
-        <td>$${Number(v.monto_solicitado).toLocaleString('es-MX')}</td>
-        <td>${v.caja_entrega}</td>
-        <td><span class="estatus-pill estatus-${v.estatus}">${v.estatus}</span></td>
-        <td>
-          ${puedeDictaminarV ? `<button class="btn btn-gold btn-sm" onclick="openViaticoModal('${v.id_solicitud}','${v.nombre_empleado}','${v.monto_solicitado}')">Dictaminar</button>` : '—'}
-        </td>
+        <td><b>${v.id_solicitud}</b></td><td>${v.nombre_empleado}</td><td>${formatFechaAmigable(v.periodo_desde)} al ${formatFechaAmigable(v.periodo_hasta)}</td>
+        <td>$${Number(v.monto_solicitado).toLocaleString('es-MX')}</td><td>${v.caja_entrega}</td><td><span class="estatus-pill estatus-${v.estatus}">${v.estatus}</span></td>
+        <td>${puedeDictaminarV ? `<button class="btn btn-gold btn-sm" onclick="openViaticoModal('${v.id_solicitud}','${v.nombre_empleado}','${v.monto_solicitado}')">Dictaminar</button>` : '—'}</td>
       `;
       tbodyV.appendChild(tr);
     });
-
-  } catch (e) { showToast("Error cargando flujos de datos.", true); }
+  } catch (e) { showToast("Error al cargar bandejas.", true); }
 }
 
-// ---------- Visor e Interacción ----------
+// ---------- Visor Fijo Global del PDF Único del Reporte ----------
 
 async function openReporteDetalle(idReporte, puedeDictaminar) {
   currentActiveReporteId = idReporte;
-  document.getElementById('detalle-titulo').textContent = `Revisión de Evidencias - Folio: ${idReporte}`;
-  document.getElementById('pdf-viewer-pane').innerHTML = `<span style="color:var(--gray-500); font-family:monospace; text-align:center; padding:20px;">Haz clic en el ojo (👁️) de cualquier gasto para previsualizar aquí su PDF sin salir del portal.</span>`;
+  document.getElementById('detalle-titulo').textContent = `Auditoría General - Folio: ${idReporte}`;
   
-  if(puedeDictaminar) { document.getElementById('admin-actions-block').classList.remove('hidden'); }
-  else { document.getElementById('admin-actions-block').classList.add('hidden'); }
+  if(puedeDictaminar) document.getElementById('admin-actions-block').classList.remove('hidden');
+  else document.getElementById('admin-actions-block').classList.add('hidden');
 
   try {
     const res = await api('getReporteDetalle', { id_reporte: idReporte });
@@ -658,40 +604,36 @@ async function openReporteDetalle(idReporte, puedeDictaminar) {
     res.registros.forEach(reg => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><b>${reg.categoria}</b></td>
-        <td>${reg.concepto}</td>
-        <td>${reg.descripcion}</td>
-        <td style="text-align:right;">$${Number(reg.monto).toLocaleString('es-MX')}</td>
-        <td style="text-align:center;">
-          ${reg.url_pdf ? `<button class="btn btn-outline btn-sm" onclick="injectPdfToViewer('${reg.url_pdf}')">👁️ Ver PDF</button>` : '<span style="color:var(--gray-400);">Sin Archivo</span>'}
-        </td>
+        <td><b>${reg.categoria}</b></td><td>${reg.concepto}</td><td>${reg.descripcion}</td>
+        <td>${reg.agencia_area || '—'}</td><td style="text-align:right;">$${Number(reg.monto).toLocaleString('es-MX')}</td>
       `;
       tbody.appendChild(tr);
     });
 
-    document.getElementById('detalle-modal').classList.remove('hidden');
-  } catch(e) { showToast("Imposible recuperar los detalles del reporte.", true); }
-}
+    // CORRECCIÓN: Renderizar el documento completo de Drive de forma fija en el panel de la derecha
+    const pane = document.getElementById('pdf-viewer-pane');
+    if (res.url_pdf_global) {
+      const fileId = res.url_pdf_global.match(/id=([^&]+)/) || res.url_pdf_global.match(/\/file\/d\/([^/]+)/);
+      if(fileId) {
+        pane.innerHTML = `<iframe src="https://drive.google.com/file/d/${fileId[1]}/preview" class="pdf-iframe" allow="autoplay"></iframe>`;
+      } else {
+        pane.innerHTML = `<span style="color:var(--red-700); padding:20px;">Error en el enlace del documento.</span>`;
+      }
+    } else {
+      pane.innerHTML = `<span style="color:var(--gray-500); padding:20px; font-family:monospace; text-align:center;">El colaborador no adjuntó archivo PDF global en este reporte.</span>`;
+    }
 
-function injectPdfToViewer(urlDrive) {
-  const pane = document.getElementById('pdf-viewer-pane');
-  if(!urlDrive || urlDrive.trim() === "") return;
-  const fileId = urlDrive.match(/id=([^&]+)/) || urlDrive.match(/\/file\/d\/([^/]+)/);
-  if(fileId) {
-    const embedUrl = `https://drive.google.com/file/d/${fileId[1]}/preview`;
-    pane.innerHTML = `<iframe src="${embedUrl}" class="pdf-iframe" allow="autoplay"></iframe>`;
-  } else {
-    pane.innerHTML = `<span style="color:var(--red-700); font-size:12px; padding:20px;">Error al transformar link de previsualización.</span>`;
-  }
+    document.getElementById('detalle-modal').classList.remove('hidden');
+  } catch(e) { showToast("Error al recuperar los conceptos del folio.", true); }
 }
 
 async function dictaminarReporte(estatus) {
   const comentario = document.getElementById('admin-comment').value.trim();
+  if(!comentario) { showToast("Las notas contables de la dictaminación son obligatorias.", true); return; }
   try {
     await api('setEstatus', { id_reporte: currentActiveReporteId, estatus, comentario, usuario: SESSION.usuario, rol: SESSION.rol });
-    showToast(`El reporte fue marcado como: ${estatus}`);
-    closeModal();
-    loadReportesYViaticos();
+    showToast(`Reporte marcado como: ${estatus}`);
+    closeModal(); loadReportesYViaticos();
   } catch(e) { showToast(e.message, true); }
 }
 
@@ -700,57 +642,36 @@ async function editRechazado(idReporte) {
     const res = await api('getReporteDetalle', { id_reporte: idReporte });
     ITEMS = res.registros.map(r => ({
       id: 'row_' + (++rowSeq), fecha: r.fecha, categoria: r.categoria, comprobante: r.comprobante, concepto: r.concepto,
-      descripcion: r.descripcion, justificacion: r.justificacion, agencia_area: r.agencia_area, monto: r.monto,
-      pdfBase64: '', url_pdf: r.url_pdf
+      descripcion: r.descripcion, justificacion: r.justificacion, agencia_area: r.agencia_area, monto: r.monto
     }));
     editingId = idReporte;
-    document.getElementById('submit-btn').textContent = 'Guardar Cambios y Reenviar';
+    document.getElementById('submit-btn').textContent = 'Guardar y Reenviar Reporte';
     document.getElementById('cancel-edit-btn').classList.remove('hidden');
-    switchTab('nuevo');
-    renderItemsTable();
-    showToast("Reporte en modo de corrección listo en la pantalla de captura.");
-  } catch(e) { showToast("Error cargando borrador.", true); }
+    if(res.url_pdf_global) {
+      document.getElementById('global-pdf-name').textContent = "Contiene PDF previo en Drive. Puedes subir uno nuevo si deseas reemplazarlo.";
+    }
+    switchTab('nuevo'); renderItemsTable();
+  } catch(e) { showToast("Error al precargar el borrador.", true); }
 }
 
 function openViaticoModal(id, colaborador, monto) {
   currentActiveViaticoId = id;
   document.getElementById('v-modal-info').textContent = `Solicitud: ${id} | Empleado: ${colaborador} | Importe: $${Number(monto).toLocaleString('es-MX')}`;
-  document.getElementById('v-admin-comment').value = '';
-  document.getElementById('viatico-modal').classList.remove('hidden');
+  document.getElementById('v-admin-comment').value = ''; document.getElementById('viatico-modal').classList.remove('hidden');
 }
 function closeViaticoModal() { document.getElementById('viatico-modal').classList.add('hidden'); }
 
 async function dictaminarViatico(estatus) {
   const comentario = document.getElementById('v-admin-comment').value.trim();
-  if (!comentario) {
-    showToast(`El comentario es obligatorio para poder ${estatus.toLowerCase()} la solicitud.`, true);
-    return;
-  }
-
+  if (!comentario) { showToast(`El comentario es requerido para dictaminar.`, true); return; }
   try {
-    const res = await api('setEstatusViatico', { 
-      id_solicitud: currentActiveViaticoId, 
-      estatus: estatus, 
-      comentario: comentario, 
-      usuario: SESSION.usuario, 
-      rol: SESSION.rol 
-    });
-    
-    if (res.ok) {
-      showToast(`Solicitud cambiada a: ${estatus}`);
-      closeViaticoModal();
-      await loadReportesYViaticos(); 
-    } else {
-      showToast(res.error || "No se pudo actualizar el estatus.", true);
-    }
-  } catch(e) { 
-    showToast(e.message || "Error de conexión con el servidor.", true); 
-  }
+    const res = await api('setEstatusViatico', { id_solicitud: currentActiveViaticoId, estatus, comentario, usuario: SESSION.usuario, rol: SESSION.rol });
+    if (res.ok) { showToast(`Solicitud cambiada a: ${estatus}`); closeViaticoModal(); loadReportesYViaticos(); }
+  } catch(e) { showToast("Error de conexión.", true); }
 }
 
 function closeModal() { document.getElementById('detalle-modal').classList.add('hidden'); }
 
-// ---------- Inicializador Automatizado ----------
 (function init() {
   const saved = sessionStorage.getItem('mcm_session_v2');
   if (saved) { SESSION = JSON.parse(saved); runApplication(); }
