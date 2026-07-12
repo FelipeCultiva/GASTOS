@@ -288,6 +288,27 @@ const CONFIG = {
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxxuobSsgS4bwkwnZNgZ1a5mvGfSJVhTltu3P9JbD5dTh7fQC53YrALqEUIn7R3GPqc/exec"
 };
 
+// Transforma cadenas YYYY-MM-DD a formato amigable DD/MMM/AAAA (ej. 13/Jul/2026)
+function formatFechaAmigable(fechaStr) {
+  if (!fechaStr || fechaStr.trim() === "") return "—";
+  
+  // Si por alguna razón sigue viniendo con la "T" de la hora, la limpiamos localmente
+  const limpia = fechaStr.split('T')[0]; 
+  const partes = limpia.split('-'); // [AAAA, MM, DD]
+  
+  if (partes.length !== 3) return fechaStr; // Retorno seguro si no tiene formato de fecha
+  
+  const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+  const anio = partes[0];
+  const mesIdx = parseInt(partes[1], 10) - 1;
+  const dia = partes[2];
+  
+  if (mesIdx >= 0 && mesIdx < 12) {
+    return `${dia}/${meses[mesIdx]}/${anio}`;
+  }
+  return fechaStr;
+}
+  
 let SESSION = null;
 let BOOTSTRAP = null;
 let ITEMS = [];
@@ -576,7 +597,7 @@ async function loadReportesYViaticos() {
       tr.innerHTML = `
         <td><b>${r.id_reporte}</b></td>
         <td>${r.nombre_empleado}</td>
-        <td>${r.periodo_desde} / ${r.periodo_hasta}</td>
+        <td>${formatFechaAmigable(r.periodo_desde)} / ${formatFechaAmigable(r.periodo_hasta)}</td>
         <td>${r.motivo}</td>
         <td>$${Number(r.total_gastos).toLocaleString('es-MX')}</td>
         <td><span class="estatus-pill estatus-${r.estatus}">${r.estatus}</span></td>
@@ -599,7 +620,7 @@ async function loadReportesYViaticos() {
       tr.innerHTML = `
         <td><b>${v.id_solicitud}</b></td>
         <td>${v.nombre_empleado}</td>
-        <td>${v.periodo_desde} al ${v.periodo_hasta}</td>
+        <td>${formatFechaAmigable(v.periodo_desde)} al ${formatFechaAmigable(v.periodo_hasta)}</td>
         <td>$${Number(v.monto_solicitado).toLocaleString('es-MX')}</td>
         <td>${v.caja_entrega}</td>
         <td><span class="estatus-pill estatus-${v.estatus}">${v.estatus}</span></td>
