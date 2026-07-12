@@ -449,12 +449,24 @@ function actualizarLimitesCalendario() {
 function processGlobalFile(inputElement) {
   const file = inputElement.files[0];
   if (!file) return;
-  if (file.type !== "application/pdf") { showToast("Permitido solo formato PDF nativo.", true); inputElement.value = ''; return; }
-  if (file.size > (BOOTSTRAP.limite_pdf_mb * 1024 * 1024)) { showToast(`Excede el límite de ${BOOTSTRAP.limite_pdf_mb} MB.`, true); inputElement.value = ''; return; }
+  
+  if (file.type !== "application/pdf") { 
+    showToast("Permitido solo formato PDF nativo.", true); 
+    inputElement.value = ''; 
+    return; 
+  }
+  
+  if (file.size > (BOOTSTRAP.limite_pdf_mb * 1024 * 1024)) { 
+    showToast(`Excede el límite de ${BOOTSTRAP.limite_pdf_mb} MB.`, true); 
+    inputElement.value = ''; 
+    return; 
+  }
 
   const reader = new FileReader();
   reader.onload = function(e) {
-    pdfGlobalBase64String = e.target.result;
+    // CORRECCIÓN: Forzar la asignación exacta al buffer global de la ventana
+    window.pdfGlobalBase64String = e.target.result;
+    
     document.getElementById('global-pdf-name').textContent = `📎 ${file.name} listo para envío`;
     document.getElementById('global-clip-btn').className = "clip-btn loaded";
     showToast("PDF Global indexado con éxito.");
@@ -542,11 +554,24 @@ async function submitReporte() {
     if (it.fecha < desde || it.fecha > hasta) return showToast(`Fila ${n}: La fecha está fuera del periodo declarado (${formatFechaAmigable(desde)} al ${formatFechaAmigable(hasta)}).`, true);
   }
 
+  // Obtener el string guardado de forma segura en la ventana global
+  const archivoAdjunto = window.pdfGlobalBase64String || "";
+
+  if (!archivoAdjunto && !editingId) {
+    return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
+  }
+
   const payload = {
-    clave_empleado: BOOTSTRAP.empleado.clave, nombre_empleado: BOOTSTRAP.empleado.nombre,
-    puesto: BOOTSTRAP.empleado.puesto, area: BOOTSTRAP.empleado.sucursal_area,
-    centro_costo: BOOTSTRAP.empleado.centro_costo, periodo_desde: desde, periodo_hasta: hasta,
-    motivo: motivo, items: ITEMS, pdfGlobalBase64: pdfGlobalBase64String
+    clave_empleado: BOOTSTRAP.empleado.clave, 
+    nombre_empleado: BOOTSTRAP.empleado.nombre,
+    puesto: BOOTSTRAP.empleado.puesto, 
+    area: BOOTSTRAP.empleado.sucursal_area,
+    centro_costo: BOOTSTRAP.empleado.centro_costo, 
+    periodo_desde: desde, 
+    periodo_hasta: hasta,
+    motivo: motivo, 
+    items: ITEMS, 
+    pdfGlobalBase64: archivoAdjunto // CORRECCIÓN: Asegurar el envío correcto al servidor
   };
 
   try {
@@ -588,13 +613,21 @@ async function submitSolicitudViaticos() {
 }
 
 function cancelEdit() {
-  editingId = null; pdfGlobalBase64String = "";
+  editingId = null; 
+  window.pdfGlobalBase64String = ""; // CORRECCIÓN: Resetear el buffer global
   document.getElementById('submit-btn').textContent = 'Enviar Reporte a Revisión';
   document.getElementById('cancel-edit-btn').classList.add('hidden');
-  document.getElementById('motivo').value = ''; document.getElementById('periodo-desde').value = ''; document.getElementById('periodo-hasta').value = '';
+  document.getElementById('motivo').value = ''; 
+  document.getElementById('periodo-desde').value = ''; 
+  document.getElementById('periodo-hasta').value = '';
   document.getElementById('global-pdf-name').textContent = "Sin archivo cargado";
   document.getElementById('global-clip-btn').className = "clip-btn";
-  ITEMS = []; addItemRow();
+  
+  const fileInput = document.getElementById('global-pdf-file');
+  if(fileInput) fileInput.value = "";
+  
+  ITEMS = []; 
+  addItemRow();
 }
 
 async function loadReportesYViaticos() {
