@@ -147,6 +147,8 @@ table.reportes tr:hover{background:var(--gray-050);}
           <div class="grid-3">
             <div class="field"><label>Desde</label><input type="date" id="periodo-desde"></div>
             <div class="field"><label>Hasta</label><input type="date" id="periodo-hasta"></div>
+            <div class="field"><label>Desde</label><input type="date" id="periodo-desde" onchange="actualizarLimitesCalendario()"></div>
+            <div class="field"><label>Hasta</label><input type="date" id="periodo-hasta" onchange="actualizarLimitesCalendario()"></div>
             <div class="field"><label>Motivo</label><input type="text" id="motivo" placeholder="Ej. Visita operativa Toluca"></div>
           </div>
         </div>
@@ -412,12 +414,26 @@ function switchTab(tab) {
   if(tab === 'reportes') { document.getElementById('tab-reportes').classList.remove('hidden'); document.getElementById('tab-btn-reportes').classList.add('active'); loadReportesYViaticos(); }
 }
 
+// Sincroniza los límites min/max de los inputs de fecha en las líneas de gasto
+function actualizarLimitesCalendario() {
+  const desde = document.getElementById('periodo-desde').value;
+  const hasta = document.getElementById('periodo-hasta').value;
+  
+  // Buscar todos los campos de fecha de las filas de gastos actuales y futuras
+  const inputsFecha = document.querySelectorAll('#items-tbody input[type="date"]');
+  inputsFecha.forEach(input => {
+    input.min = desde || '';
+    input.max = hasta || '';
+  });
+}
+  
 // ---------- Operación e Inyección Dinámica del Catálogo de Agencias ----------
 
 function addItemRow() {
   const id = 'row_' + (++rowSeq);
   ITEMS.push({ id, fecha: '', categoria: '', comprobante: '', concepto: '', descripcion: '', justificacion: '', agencia_area: '', monto: '' });
   renderItemsTable();
+  actualizarLimitesCalendario(); // CORRECCIÓN: Aplicar límites al instante a la nueva fila
 }
 
 function removeItemRow(id) { ITEMS = ITEMS.filter(it => it.id !== id); renderItemsTable(); }
@@ -492,29 +508,68 @@ async function submitReporte() {
   const hasta = document.getElementById('periodo-hasta').value;
   const motivo = document.getElementById('motivo').value.trim();
 
-  if (!desde || !hasta || !motivo) return showToast("Por favor complementa el encabezado temporal y motivo.", true);
-  if (ITEMS.length === 0) return showToast("Agrega líneas de gasto.", true);
-  if (!pdfGlobalBase64String && !editingId) return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
+  // 1. Validar encabezado obligatorio
+  if (!desde || !hasta || !motivo) {
+    return showToast("Por favor complementa el periodo (Desde / Hasta) y el motivo del reporte.", true);
+  }
+  if (ITEMS.length === 0) {
+    return showToast("Debe agregar al menos una línea de gasto.", true);
+  }
+  if (!pdfGlobalBase64String && !editingId) {
+    return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
+  }
 
+  // 2. Validar campos obligatorios fila por fila (Excepto Justificación)
+  for (let i = 0; i < ITEMS.length; i++) {
+    const it = ITEMS[i];
+    const n = i + 1; // Número de fila visual para el usuario
+
+    if (!it.fecha) return showToast(`Fila ${n}: La fecha del gasto es obligatoria.`, true);
+    if (!it.categoria) return showToast(`Fila ${n}: Debe seleccionar una categoría.`, true);
+    if (!it.comprobante) return showToast(`Fila ${n}: Debe seleccionar un tipo de comprobante.`, true);
+    if (!it.concepto) return showToast(`Fila ${n}: Debe seleccionar un concepto.`, true);
+    if (!it.descripcion || !it.descripcion.trim()) return showToast(`Fila ${n}: La descripción del gasto es obligatoria.`, true);
+    if (!it.agencia_area) return showToast(`Fila ${n}: Debe seleccionar una Agencia / Área del catálogo.`, true);
+    
+    const montoNum = parseFloat(it.monto);
+    if (isNaN(montoNum) || montoNum <= 0) {
+      return showToast(`Fila ${n}: El monto debe ser un número válido y mayor a cero.`, true);
+    }
+
+    // 3. Doble validación de seguridad para fechas fuera de rango
+    if (it.fecha < desde || it.fecha > hasta) {
+      return showToast(`Fila ${n}: La fecha del gasto (${formatFechaAmigable(it.fecha)}) está fuera del periodo declarado (${formatFechaAmigable(desde)} al ${formatFechaAmigable(hasta)}).`, true);
+    }
+  }
+
+  // Si todas las validaciones pasan, se procede con el envío estructurado
   const payload = {
-    clave_empleado: BOOTSTRAP.empleado.clave, nombre_empleado: BOOTSTRAP.empleado.nombre,
-    puesto: BOOTSTRAP.empleado.puesto, area: BOOTSTRAP.empleado.sucursal_area,
-    centro_costo: BOOTSTRAP.empleado.centro_costo, periodo_desde: desde, periodo_hasta: hasta,
-    motivo: motivo, items: ITEMS, pdfGlobalBase64: pdfGlobalBase64String
+    clave_empleado: BOOTSTRAP.empleado.clave, 
+    nombre_empleado: BOOTSTRAP.empleado.nombre,
+    puesto: BOOTSTRAP.empleado.puesto, 
+    area: BOOTSTRAP.empleado.sucursal_area,
+    centro_costo: BOOTSTRAP.empleado.centro_costo, 
+    periodo_desde: desde, 
+    periodo_hasta: hasta,
+    motivo: motivo, 
+    items: ITEMS, 
+    pdfGlobalBase64: pdfGlobalBase64String
   };
 
   try {
     if (editingId) {
       payload.id_reporte = editingId;
       await api('updateReporte', payload);
-      showToast("Reporte corregido y reenviado.");
+      showToast("Reporte corregido y reenviado con éxito.");
     } else {
       await api('submitReporte', payload);
-      showToast("Reporte unificado enviado con éxito.");
+      showToast("Reporte unificado enviado a revisión correctamente.");
     }
     cancelEdit();
     switchTab('reportes');
-  } catch (e) { showToast(e.message, true); }
+  } catch (e) { 
+    showToast(e.message, true); 
+  }
 }
 
 async function submitSolicitudViaticos() {
