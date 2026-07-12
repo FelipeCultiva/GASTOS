@@ -285,7 +285,7 @@ table.reportes tr:hover{background:var(--gray-050);}
 
 <script>
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyTaVHSj_Jgcr33KwWRYGes7kqH2g4X5ToopEuRvKL_sa21kKbteRbRcbxcBPu_NDM7/exec"
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwBOS_kb_QKX0XQ5IxSDbPQ9mt2PbynNhxUFYDiPhVw8LcbL6dz3vVklDCHsZAbMeLz/exec"
 };
 
 // Transforma cadenas YYYY-MM-DD a formato amigable DD/MMM/AAAA (ej. 13/Jul/2026)
@@ -722,12 +722,32 @@ function closeViaticoModal() { document.getElementById('viatico-modal').classLis
 
 async function dictaminarViatico(estatus) {
   const comentario = document.getElementById('v-admin-comment').value.trim();
+  
+  // CORRECCIÓN: Validar obligatoriedad del comentario para ambas acciones
+  if (!comentario) {
+    showToast(`El comentario es obligatorio para poder ${estatus.toLowerCase()} la solicitud.`, true);
+    return;
+  }
+
   try {
-    await api('setEstatusViatico', { id_solicitud: currentActiveViaticoId, estatus, comentario, usuario: SESSION.usuario, rol: SESSION.rol });
-    showToast(`Solicitud cambiada a: ${estatus}`);
-    closeViaticoModal();
-    loadReportesYViaticos();
-  } catch(e) { showToast(e.message, true); }
+    const res = await api('setEstatusViatico', { 
+      id_solicitud: currentActiveViaticoId, 
+      estatus: estatus, 
+      comentario: comentario, 
+      usuario: SESSION.usuario, 
+      rol: SESSION.rol 
+    });
+    
+    if (res.ok) {
+      showToast(`Solicitud cambiada a: ${estatus}`);
+      closeViaticoModal();
+      await loadReportesYViaticos(); // Recarga y refresca las tablas en pantalla
+    } else {
+      showToast(res.error || "No se pudo actualizar el estatus.", true);
+    }
+  } catch(e) { 
+    showToast(e.message || "Error de conexión con el servidor.", true); 
+  }
 }
 
 function closeModal() { document.getElementById('detalle-modal').classList.add('hidden'); }
