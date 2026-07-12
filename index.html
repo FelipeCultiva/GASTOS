@@ -413,7 +413,10 @@ function switchTab(tab) {
 
 // Sincroniza los límites min/max de los inputs de fecha en las líneas de gasto
 function actualizarLimitesCalendario() {
-  // Re-renderizar la tabla para que aplique los nuevos min/max leídos del encabezado
+  // BLINDAJE CRÍTICO: Si no se ha cargado el catálogo (Bootstrap), detener ejecución
+  if (!BOOTSTRAP) return;
+  
+  // Re-renderizar la tabla para inyectar los nuevos límites min/max
   renderItemsTable();
 }
   
@@ -465,11 +468,14 @@ function renderItemsTable() {
   const tbody = document.getElementById('items-tbody');
   tbody.innerHTML = '';
   
-  if (!BOOTSTRAP) return;
+  // Si no hay datos de sesión o catálogos, salir limpiamente sin arrojar error
+  if (!BOOTSTRAP) return; 
 
-  // Obtener los límites del encabezado en tiempo real
+  // Obtener los límites del encabezado temporal en tiempo real
   const desdeVal = document.getElementById('periodo-desde').value;
   const hastaVal = document.getElementById('periodo-hasta').value;
+
+  // ... (el resto del ciclo ITEMS.forEach y computeTotal se queda exactamente igual)
 
   ITEMS.forEach(it => {
     const tr = document.createElement('tr');
