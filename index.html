@@ -120,7 +120,7 @@ table.reportes tr:hover{background:var(--gray-050);}
   <!-- ===================== MAIN SCREEN ===================== -->
   <div id="main-screen" class="hidden">
     <div id="topbar">
-      <div class="brand">MAS CON MENOS <span>|Módulo de Viaticos</span></div>
+      <div class="brand">MAS CON MENOS <span>| Suite Operativa</span></div>
       <div class="userinfo">
         <span id="userinfo-nombre"></span>
         <span id="userinfo-rol" class="role-badge"></span>
@@ -231,7 +231,7 @@ table.reportes tr:hover{background:var(--gray-050);}
   </div>
 </div>
 
-<!-- ===================== MODAL DIVIDIDO: VISOR DE PDF INCORPORADO ===================== -->
+<!-- ===================== MODAL DIVIDIDO ===================== -->
 <div id="detalle-modal" class="modal-overlay hidden" style="position:fixed; inset:0; background:rgba(11,37,69,0.55); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px;">
   <div class="split-modal-box">
     <div style="display:flex; justify-content:between; align-items:center; border-bottom:1px solid var(--gray-200); padding-bottom:10px;">
@@ -241,14 +241,12 @@ table.reportes tr:hover{background:var(--gray-050);}
     <div id="detalle-comentario" style="display:none; background:var(--red-100); color:var(--red-700); padding:8px 12px; font-size:12.5px; border-radius:6px; margin-top:10px;"></div>
     
     <div class="split-modal-body">
-      <!-- Lado Izquierdo: Datos y Tabla -->
       <div class="split-left">
         <table class="reportes" style="font-size:12px;">
           <thead><tr><th>Categoría</th><th>Concepto</th><th>Descripción</th><th>Monto</th><th>Evidencia</th></tr></thead>
           <tbody id="detalle-tbody"></tbody>
         </table>
         
-        <!-- Bloque de Acciones Administrativas según Rol -->
         <div id="admin-actions-block" class="hidden" style="margin-top:20px; border-top:2px solid var(--gray-200); padding-top:15px;">
           <textarea id="admin-comment" rows="2" style="width:100%; border-radius:6px; padding:8px; border:1px solid var(--gray-200); margin-bottom:10px;" placeholder="Escribe observaciones o motivo de rechazo aquí..."></textarea>
           <div style="display:flex; gap:10px; justify-content:flex-end;">
@@ -258,7 +256,6 @@ table.reportes tr:hover{background:var(--gray-050);}
         </div>
       </div>
       
-      <!-- Lado Derecho: Visor PDF Interactivo Embebido -->
       <div class="split-right" id="pdf-viewer-pane">
         <span style="color:var(--gray-500); font-size:13px; font-family:monospace; text-align:center; padding:20px;">Selecciona una línea de gasto que posea archivo adjunto para previsualizar aquí su documento.</span>
       </div>
@@ -285,27 +282,19 @@ table.reportes tr:hover{background:var(--gray-050);}
 
 <script>
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzwtFkw4WlL0IeUETRM02j7RM2wb9KNAUJnWV6hl73vs-mHymFh0IhEXyWOjPLrubdR/exec"
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwHw5WM9JrDksdyL_s2rhwn69oKUXKSYIlxH_2sQVn4D4HRIwdju9RBBWcI5UywqE25/exec"
 };
 
-// Transforma cadenas YYYY-MM-DD a formato amigable DD/MMM/AAAA (ej. 13/Jul/2026)
 function formatFechaAmigable(fechaStr) {
   if (!fechaStr || fechaStr.trim() === "") return "—";
-  
-  // Si por alguna razón sigue viniendo con la "T" de la hora, la limpiamos localmente
   const limpia = fechaStr.split('T')[0]; 
-  const partes = limpia.split('-'); // [AAAA, MM, DD]
-  
-  if (partes.length !== 3) return fechaStr; // Retorno seguro si no tiene formato de fecha
-  
+  const partes = limpia.split('-'); 
+  if (partes.length !== 3) return fechaStr; 
   const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
   const anio = partes[0];
   const mesIdx = parseInt(partes[1], 10) - 1;
   const dia = partes[2];
-  
-  if (mesIdx >= 0 && mesIdx < 12) {
-    return `${dia}/${meses[mesIdx]}/${anio}`;
-  }
+  if (mesIdx >= 0 && mesIdx < 12) { return `${dia}/${meses[mesIdx]}/${anio}`; }
   return fechaStr;
 }
   
@@ -341,7 +330,7 @@ function showToast(msg, isError) {
   setTimeout(() => t.classList.remove('show'), 4000);
 }
 
-// ---------- Gestión de Sesiones ----------
+// ---------- Gestión de Sesiones CORREGIDA ----------
 
 async function doLogin() {
   const usuario = document.getElementById('login-usuario').value.trim();
@@ -352,7 +341,15 @@ async function doLogin() {
   if (!usuario || !password) { errBox.textContent = "Campos requeridos."; errBox.classList.add('show'); return; }
   try {
     const data = await api('login', { usuario, password });
-    SESSION = data;
+    
+    // CORRECCIÓN: Garantizar inyección inmediata y limpia de variables tipadas del perfil
+    SESSION = {
+      usuario: data.usuario,
+      rol: String(data.rol).trim().toUpperCase(),
+      clave_empleado: data.clave_empleado ? String(data.clave_empleado).trim().toUpperCase() : "",
+      permisos: data.permisos || { revisa_gastos: false, revisa_viaticos: false }
+    };
+    
     sessionStorage.setItem('mcm_session_v2', JSON.stringify(SESSION));
     await runApplication();
   } catch (e) {
@@ -374,27 +371,35 @@ async function runApplication() {
 
   BOOTSTRAP = await api('bootstrap', { clave_empleado: SESSION.clave_empleado });
   
-  // Guardar y recordar el Jefe Inmediato
-  if (localStorage.getItem('mcm_jefe_' + SESSION.clave_empleado)) {
+  if (SESSION.clave_empleado && localStorage.getItem('mcm_jefe_' + SESSION.clave_empleado)) {
     document.getElementById('sv-jefe').value = localStorage.getItem('mcm_jefe_' + SESSION.clave_empleado);
   }
 
-  // Prellenar select de Cajas para Viáticos
   const boxSelect = document.getElementById('sv-caja');
   boxSelect.innerHTML = '<option value="">Seleccionar caja...</option>';
   (BOOTSTRAP.cajas || []).forEach(c => {
     boxSelect.innerHTML += `<option value="${c}">${c}</option>`;
   });
 
-  if (SESSION.clave_empleado) {
+  // CORRECCIÓN: Control asíncrono estricto de visibilidad de los menús 
+  if (SESSION.clave_empleado && SESSION.clave_empleado.trim() !== "") {
+    document.getElementById('tab-btn-nuevo').classList.remove('hidden');
+    document.getElementById('tab-btn-solicitud').classList.remove('hidden');
+    
+    if (!SESSION.permisos.revisa_gastos && !SESSION.permisos.revisa_viaticos) {
+      document.getElementById('tab-btn-reportes').textContent = "Mis Solicitudes / Historial";
+    } else {
+      document.getElementById('tab-btn-reportes').textContent = "Bandeja Reportes / Historial";
+    }
+    
     fillEmpleadoCard();
     ITEMS = []; editingId = null;
     addItemRow();
     switchTab('nuevo');
   } else {
-    // Si es un Administrador puro sin cuenta de empleado, forzar vista a bandejas de revisión
     document.getElementById('tab-btn-nuevo').classList.add('hidden');
     document.getElementById('tab-btn-solicitud').classList.add('hidden');
+    document.getElementById('tab-btn-reportes').textContent = "Bandeja Reportes / Historial";
     switchTab('reportes');
   }
 }
@@ -422,7 +427,7 @@ function switchTab(tab) {
   }
 }
 
-// ---------- Operación de Líneas de Gastos y Procesamiento PDF ----------
+// ---------- Operación de Líneas de Gastos ----------
 
 function addItemRow() {
   const id = 'row_' + (++rowSeq);
@@ -440,7 +445,6 @@ function updateItem(id, field, value) {
   else computeTotal();
 }
 
-// Interceptor de carga local de archivos con validador de peso dinámico desde Sheet
 function processFile(id, inputElement) {
   const file = inputElement.files[0];
   if (!file) return;
@@ -583,7 +587,7 @@ function cancelEdit() {
   ITEMS = []; addItemRow();
 }
 
-// ---------- Consultas y Renderizado de Bandejas (Modo Administrativo Incorporado) ----------
+// ---------- Consultas y Renderizado de Bandejas ----------
 
 async function loadReportesYViaticos() {
   try {
@@ -592,7 +596,7 @@ async function loadReportesYViaticos() {
     tbodyR.innerHTML = '';
     
     repData.reportes.forEach(r => {
-      const puedeDictaminar = SESSION.permisos.revisa_gastos && r.estatus === 'ENVIADO';
+      const puedeDictaminar = (SESSION.rol === 'ADM_FULL' || SESSION.rol === 'ADM_GAST') && r.estatus === 'ENVIADO';
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><b>${r.id_reporte}</b></td>
@@ -609,13 +613,12 @@ async function loadReportesYViaticos() {
       tbodyR.appendChild(tr);
     });
 
-    // Carga de Viáticos
     const viaData = await api('listViaticos', { rol: SESSION.rol, clave_empleado: SESSION.clave_empleado });
     const tbodyV = document.getElementById('viaticos-tbody');
     tbodyV.innerHTML = '';
     
     viaData.solicitudes.forEach(v => {
-      const puedeDictaminarV = SESSION.permisos.revisa_viaticos && v.estatus === 'ENVIADO';
+      const puedeDictaminarV = (SESSION.rol === 'ADM_FULL' || SESSION.rol === 'ADM_VIAT') && v.estatus === 'ENVIADO';
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><b>${v.id_solicitud}</b></td>
@@ -634,7 +637,7 @@ async function loadReportesYViaticos() {
   } catch (e) { showToast("Error cargando flujos de datos.", true); }
 }
 
-// ---------- Visor e Interacción con Evidencias en Tiempo Real ----------
+// ---------- Visor e Interacción ----------
 
 async function openReporteDetalle(idReporte, puedeDictaminar) {
   currentActiveReporteId = idReporte;
@@ -667,12 +670,9 @@ async function openReporteDetalle(idReporte, puedeDictaminar) {
   } catch(e) { showToast("Imposible recuperar los detalles del reporte.", true); }
 }
 
-// Inyecta dinámicamente el PDF de Google Drive en el panel iframe derecho de la pantalla dividida
 function injectPdfToViewer(urlDrive) {
   const pane = document.getElementById('pdf-viewer-pane');
   if(!urlDrive || urlDrive.trim() === "") return;
-  
-  // Transformar URL de descarga compartida a URL de render nativo incrustado para bypass de seguridad
   const fileId = urlDrive.match(/id=([^&]+)/) || urlDrive.match(/\/file\/d\/([^/]+)/);
   if(fileId) {
     const embedUrl = `https://drive.google.com/file/d/${fileId[1]}/preview`;
@@ -695,7 +695,6 @@ async function dictaminarReporte(estatus) {
 async function editRechazado(idReporte) {
   try {
     const res = await api('getReporteDetalle', { id_reporte: idReporte });
-    // Recuperar el registro de las filas guardando sus links originales de Drive
     ITEMS = res.registros.map(r => ({
       id: 'row_' + (++rowSeq), fecha: r.fecha, categoria: r.categoria, comprobante: r.comprobante, concepto: r.concepto,
       descripcion: r.descripcion, justificacion: r.justificacion, agencia_area: r.agencia_area, monto: r.monto,
@@ -710,8 +709,6 @@ async function editRechazado(idReporte) {
   } catch(e) { showToast("Error cargando borrador.", true); }
 }
 
-// ---------- Modals para Flujos de Viáticos ----------
-
 function openViaticoModal(id, colaborador, monto) {
   currentActiveViaticoId = id;
   document.getElementById('v-modal-info').textContent = `Solicitud: ${id} | Empleado: ${colaborador} | Importe: $${Number(monto).toLocaleString('es-MX')}`;
@@ -722,8 +719,6 @@ function closeViaticoModal() { document.getElementById('viatico-modal').classLis
 
 async function dictaminarViatico(estatus) {
   const comentario = document.getElementById('v-admin-comment').value.trim();
-  
-  // CORRECCIÓN: Validar obligatoriedad del comentario para ambas acciones
   if (!comentario) {
     showToast(`El comentario es obligatorio para poder ${estatus.toLowerCase()} la solicitud.`, true);
     return;
@@ -741,7 +736,7 @@ async function dictaminarViatico(estatus) {
     if (res.ok) {
       showToast(`Solicitud cambiada a: ${estatus}`);
       closeViaticoModal();
-      await loadReportesYViaticos(); // Recarga y refresca las tablas en pantalla
+      await loadReportesYViaticos(); 
     } else {
       showToast(res.error || "No se pudo actualizar el estatus.", true);
     }
