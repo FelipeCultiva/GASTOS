@@ -258,7 +258,7 @@ table.reportes tr:hover{background:var(--gray-050);}
     <div class="split-modal-body">
       <div class="split-left">
         <table class="reportes" style="font-size:12px;">
-          <thead><tr><th>Categoría</th><th>Concepto</th><th>Descripción</th><th>Agencia / Área</th><th>Monto</th></tr></thead>
+          <thead><tr><th>Categoría</th><th>Concepto</th><th>Descripción</th><th>Justificación</th><th>Agencia / Área</th><th>Monto</th></tr></thead>
           <tbody id="detalle-tbody"></tbody>
         </table>
         
@@ -550,7 +550,7 @@ async function submitReporte() {
     if (!it.descripcion || !it.descripcion.trim()) return showToast(`Fila ${n}: La descripción del gasto es obligatoria.`, true);
     if (!it.agencia_area) return showToast(`Fila ${n}: Debe seleccionar una Agencia / Área del catálogo.`, true);
     const montoNum = parseFloat(it.monto);
-    if (isNaN(montoNum) || montoNum <= 0) return showToast(`Fila ${n}: El monto debe ser un número válido y mayor a cero.`, true);
+    if (isNaN(montoNum) || montoNum <= 0) return showToast(`Fila ${n}: El monto debe ser un número válido and mayor a cero.`, true);
     if (it.fecha < desde || it.fecha > hasta) return showToast(`Fila ${n}: La fecha está fuera del periodo declarado (${formatFechaAmigable(desde)} al ${formatFechaAmigable(hasta)}).`, true);
   }
 
@@ -564,7 +564,7 @@ async function submitReporte() {
     periodo_hasta: hasta,
     motivo: motivo, 
     items: ITEMS, 
-    pdfGlobalBase64: archivoAdjunto
+    pdfGlobalBase64: archivoAdjunto // CORRECCIÓN: Sincronizado con la variable de arriba
   };
 
   try {
