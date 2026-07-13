@@ -320,7 +320,7 @@ table.reportes tr:hover{background:var(--gray-050);}
     
     <!-- Pie de página dinámico para las pantallas del sistema interno -->
     <div class="main-footer">
-      <div>MCM Suite Operativa — Todos los derechos reservados</div>
+      <div>MCM Móduo de Viaticos — Todos los derechos reservados</div>
       <div id="main-footer-version">Cargando versión...</div>
     </div>
   </div>
@@ -380,36 +380,53 @@ const CONFIG = {
 };
 
 function formatFechaAmigable(fechaStr) {
-  if (!fechaStr || fechaStr.trim() === "") return "—";
+  if (!fechaStr || String(fechaStr).trim() === "") return "—";
   
-  // Si Google o JS mandan el formato largo "Mon Jul 13 2026...", extraer solo la fecha limpia
-  let limpia = fechaStr;
-  if (typeof fechaStr === 'string' && fechaStr.includes('GMT')) {
-    // Si viene en formato largo, intentar convertirlo a formato estándar corto
+  let limpia = String(fechaStr).trim();
+  
+  // 1. SI VIENE EN FORMATO TEXTO LARGO DE GOOGLE (Ej: "Mon Jul 13 2026 01:00:00...")
+  if (limpia.includes(' ') && !limpia.includes('-')) {
     try {
       const d = new Date(fechaStr);
       if (!isNaN(d.getTime())) {
-        limia = d.toISOString().split('T')[0];
+        // Formatear manualmente a DD/Mes/AAAA usando la configuración regional del navegador
+        const dia = String(d.getDate()).padStart(2, '0');
+        const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+        const mes = meses[d.getMonth()];
+        const anio = d.getFullYear();
+        return `${dia}/${mes}/${anio}`;
       }
-    } catch(e){}
-  } else if (typeof fechaStr === 'string' && fechaStr.includes('T')) {
-    limpia = fechaStr.split('T')[0];
-  } else if (Object.prototype.toString.call(fechaStr) === '[object Date]') {
-    limpia = Utilities.formatDate(fechaStr, "GMT", "yyyy-MM-dd"); // Resguardo por si llega nativo
+    } catch(e) {}
+    
+    // Fallback secundario si falla el objeto Date: intentar parsear el texto por partes
+    const partesTexto = limpia.split(' ');
+    if (partesTexto.length >= 4) {
+      // El formato suele ser: [0]=Mon, [1]=Jul, [2]=13, [3]=2026
+      const mesTraducido = partesTexto[1].substring(0, 3);
+      return `${partesTexto[2].padStart(2, '0')}/${mesTraducido}/${partesTexto[3]}`;
+    }
   }
 
+  // 2. SI VIENE EN FORMATO ESTÁNDAR ISO CON TIEMPO (Ej: "2026-07-13T13:00:00")
+  if (limpia.includes('T')) {
+    limpia = limpia.split('T')[0];
+  }
+
+  // 3. PROCESAR FORMATO CORTO ESTÁNDAR (Ej: "2026-07-13")
   const partes = limpia.split('-'); 
-  if (partes.length !== 3) return limpia.split(' ')[0]; // Si falla el split, retornar solo el bloque inicial sin horas
+  if (partes.length === 3) {
+    const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+    try {
+      const mesIdx = parseInt(partes[1], 10) - 1;
+      if (mesIdx >= 0 && mesIdx < 12) { 
+        return `${partes[2].padStart(2, '0')}/${meses[mesIdx]}/${partes[0]}`; 
+      }
+    } catch(e) {}
+  }
   
-  const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-  try {
-    const mesIdx = parseInt(partes[1], 10) - 1;
-    if (mesIdx >= 0 && mesIdx < 12) { 
-      return `${partes[2]}/${meses[mesIdx]}/${partes[0]}`; 
-    }
-  } catch(e) {}
-  return limpia;
-}  
+  return limpia; // Si no entra en ninguna regla, devuelve el texto original sin romper nada
+}
+  
 let SESSION = null;
 let BOOTSTRAP = null;
 let ITEMS = [];
