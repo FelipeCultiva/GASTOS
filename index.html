@@ -95,7 +95,38 @@ table.reportes tr:hover{background:var(--gray-050);}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy-900);color:var(--white);padding:12px 20px;border-radius:8px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.25);z-index:3000;display:none;}
 .toast.show{display:block;}
 .toast.error{background:var(--red-700);}
-.loading-overlay{position:fixed;inset:0;background:rgba(245,246,248,0.85);display:flex;align-items:center;justify-content:center;z-index:4000;font-family:'IBM Plex Mono',monospace;color:var(--navy-900);}
+/* Nuevo cargador dinámico con animación de reloj/esfera */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 37, 69, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  z-index: 4000;
+  color: var(--white);
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+.loading-overlay h2 {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+.spinner-clock {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--gray-400);
+  border-top-color: var(--gold-500);
+  border-radius: 50%;
+  animation: spinClock 1s linear infinite;
+}
+@keyframes spinClock {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 .clip-btn{background:var(--gray-200);border:1px solid var(--gray-400);border-radius:4px;padding:6px 12px;font-size:12px;font-weight:600;}
 .clip-btn.loaded{background:var(--green-100);color:var(--green-700);border-color:var(--green-700);}
 
@@ -129,7 +160,7 @@ table.reportes tr:hover{background:var(--gray-050);}
   <!-- ===================== MAIN SCREEN ===================== -->
   <div id="main-screen" class="hidden">
     <div id="topbar">
-      <div class="brand">MAS CON MENOS <span>| Suite Operativa</span></div>
+      <div class="brand">MAS CON MENOS <span>| MÓDULO VIATICOS</span></div>
       <div class="userinfo">
         <span id="userinfo-nombre"></span>
         <span id="userinfo-rol" class="role-badge"></span>
@@ -338,7 +369,10 @@ table.reportes tr:hover{background:var(--gray-050);}
 </div>
 
 <div id="toast" class="toast"></div>
-<div id="loading" class="loading-overlay hidden"><h2>Procesando Información...</h2></div>
+<div id="loading" class="loading-overlay hidden">
+  <div class="spinner-clock"></div>
+  <h2>Procesando Información...</h2>
+</div>
 
 <script>
 const CONFIG = {
@@ -347,17 +381,35 @@ const CONFIG = {
 
 function formatFechaAmigable(fechaStr) {
   if (!fechaStr || fechaStr.trim() === "") return "—";
-  const limpia = fechaStr.split('T')[0]; 
+  
+  // Si Google o JS mandan el formato largo "Mon Jul 13 2026...", extraer solo la fecha limpia
+  let limpia = fechaStr;
+  if (typeof fechaStr === 'string' && fechaStr.includes('GMT')) {
+    // Si viene en formato largo, intentar convertirlo a formato estándar corto
+    try {
+      const d = new Date(fechaStr);
+      if (!isNaN(d.getTime())) {
+        limia = d.toISOString().split('T')[0];
+      }
+    } catch(e){}
+  } else if (typeof fechaStr === 'string' && fechaStr.includes('T')) {
+    limpia = fechaStr.split('T')[0];
+  } else if (Object.prototype.toString.call(fechaStr) === '[object Date]') {
+    limpia = Utilities.formatDate(fechaStr, "GMT", "yyyy-MM-dd"); // Resguardo por si llega nativo
+  }
+
   const partes = limpia.split('-'); 
-  if (partes.length !== 3) return fechaStr; 
+  if (partes.length !== 3) return limpia.split(' ')[0]; // Si falla el split, retornar solo el bloque inicial sin horas
+  
   const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
   try {
     const mesIdx = parseInt(partes[1], 10) - 1;
-    if (mesIdx >= 0 && mesIdx < 12) { return `${partes[2]}/${meses[mesIdx]}/${partes[0]}`; }
+    if (mesIdx >= 0 && mesIdx < 12) { 
+      return `${partes[2]}/${meses[mesIdx]}/${partes[0]}`; 
+    }
   } catch(e) {}
-  return fechaStr;
-}
-  
+  return limpia;
+}  
 let SESSION = null;
 let BOOTSTRAP = null;
 let ITEMS = [];
