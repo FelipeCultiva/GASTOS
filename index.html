@@ -25,8 +25,8 @@ input,select,textarea{font-family:inherit;}
 #app{min-height:100vh;display:flex;flex-direction:column;}
 .hidden{display:none !important;}
 
-#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,var(--navy-900),var(--navy-700));}
-.login-card{width:380px;background:var(--white);border-radius:10px;box-shadow:0 20px 50px rgba(11,37,69,0.35);padding:34px 30px;}
+#login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,var(--navy-900),var(--navy-700));}
+.login-card{width:380px;background:var(--white);border-radius:10px;box-shadow:0 20px 50px rgba(11,37,69,0.35);padding:34px 30px;position:relative;}
 .login-brand{font-family:'Libre Franklin',sans-serif;font-weight:800;font-size:20px;color:var(--navy-900);text-align:center;margin-bottom:2px;}
 .login-sub{text-align:center;font-size:12px;color:var(--gray-500);margin-bottom:26px;text-transform:uppercase;}
 .field{margin-bottom:16px;}
@@ -53,7 +53,7 @@ input,select,textarea{font-family:inherit;}
 .tab-btn{background:none;border:none;padding:14px 18px;font-size:13.5px;font-weight:600;color:var(--gray-500);border-bottom:3px solid transparent;}
 .tab-btn.active{color:var(--navy-900);border-bottom-color:var(--gold-600);}
 
-main{flex:1;max-width:1280px;width:100%;margin:0 auto;padding:24px 26px 60px;}
+main{flex:1;max-width:1280px;width:100%;margin:0 auto;padding:24px 26px 40px;}
 .card{background:var(--white);border:1px solid var(--gray-200);border-radius:10px;padding:20px 22px;margin-bottom:18px;}
 .card h2{font-family:'Libre Franklin',sans-serif;font-size:14px;text-transform:uppercase;color:var(--navy-900);margin:0 0 16px 0;}
 .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
@@ -76,7 +76,6 @@ table.reportes tr:hover{background:var(--gray-050);}
 .search-box-container {display:flex; gap:10px; margin-bottom:14px;}
 .search-input {flex:1; padding:9px 12px; border:1px solid var(--gray-200); border-radius:6px; font-size:13.5px;}
 
-/* Estilos específicos para los filtros en los encabezados */
 .th-filter-wrap {display: flex; flex-direction: column; gap: 4px; padding: 6px 4px;}
 .th-filter-wrap span {font-size: 11px; text-transform: uppercase;}
 .header-filter {width: 100%; padding: 4px 6px; font-size: 11px; border: 1px solid var(--gray-400); border-radius: 4px; color: var(--ink); font-weight: normal;}
@@ -99,6 +98,10 @@ table.reportes tr:hover{background:var(--gray-050);}
 .loading-overlay{position:fixed;inset:0;background:rgba(245,246,248,0.85);display:flex;align-items:center;justify-content:center;z-index:4000;font-family:'IBM Plex Mono',monospace;color:var(--navy-900);}
 .clip-btn{background:var(--gray-200);border:1px solid var(--gray-400);border-radius:4px;padding:6px 12px;font-size:12px;font-weight:600;}
 .clip-btn.loaded{background:var(--green-100);color:var(--green-700);border-color:var(--green-700);}
+
+/* Estilos de pie de página estéticos para versionamiento */
+.footer-version {text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gray-400); margin-top:16px;}
+.main-footer {max-width:1280px; width:100%; margin:0 auto; padding:0 26px 20px; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gray-500);}
 </style>
 </head>
 <body>
@@ -119,6 +122,7 @@ table.reportes tr:hover{background:var(--gray-050);}
         <input id="login-password" type="password" placeholder="••••••••">
       </div>
       <button class="btn btn-primary" onclick="doLogin()">Ingresar</button>
+      <div class="footer-version" id="login-footer-text">Cargando meta-información...</div>
     </div>
   </div>
 
@@ -133,7 +137,6 @@ table.reportes tr:hover{background:var(--gray-050);}
       </div>
     </div>
 
-    <!-- REORDENAMIENTO ESTÉTICO: Viáticos -> Gastos -> Historial/Bandejas -->
     <div id="tabs">
       <button class="tab-btn active" id="tab-btn-solicitud" onclick="switchTab('solicitud')">Solicitud de Viáticos</button>
       <button class="tab-btn" id="tab-btn-nuevo" onclick="switchTab('nuevo')">Comprobación de Gastos</button>
@@ -141,7 +144,7 @@ table.reportes tr:hover{background:var(--gray-050);}
     </div>
 
     <main>
-      <!-- ===================== TAB: SOLICITUD VIÁTICOS (AHORA PRIMERO) ===================== -->
+      <!-- ===================== TAB: SOLICITUD VIÁTICOS ===================== -->
       <section id="tab-solicitud">
         <div class="card">
           <h2>Nueva Solicitud de Viáticos (Anticipo)</h2>
@@ -161,7 +164,7 @@ table.reportes tr:hover{background:var(--gray-050);}
         </div>
       </section>
 
-      <!-- ===================== TAB: NUEVO REPORTE GASTOS (AHORA SEGUNDO) ===================== -->
+      <!-- ===================== TAB: NUEVO REPORTE GASTOS ===================== -->
       <section id="tab-nuevo" class="hidden">
         <div class="card">
           <h2>Datos del colaborador</h2>
@@ -232,12 +235,11 @@ table.reportes tr:hover{background:var(--gray-050);}
         </div>
       </section>
 
-      <!-- ===================== TAB: BANDEJA DE REPORTES (TERCERO) ===================== -->
+      <!-- ===================== TAB: BANDEJA DE REPORTES ===================== -->
       <section id="tab-reportes" class="hidden">
         <div class="card">
           <h2>Bandeja de Reportes de Gastos</h2>
           
-          <!-- Control de búsqueda inteligente global para gastos -->
           <div id="search-block-gastos" class="search-box-container hidden">
             <input type="text" id="search-input-gastos" class="search-input" placeholder="🔍 Búsqueda inteligente (Digita folio, colaborador o motivo y presiona Buscar)...">
             <button class="btn btn-primary btn-sm" onclick="ejecutarFiltrosReportes()">Buscar</button>
@@ -262,7 +264,6 @@ table.reportes tr:hover{background:var(--gray-050);}
         <div class="card">
           <h2>Bandeja de Solicitudes de Viáticos</h2>
 
-          <!-- Control de búsqueda inteligente global para viáticos -->
           <div id="search-block-viaticos" class="search-box-container hidden">
             <input type="text" id="search-input-viaticos" class="search-input" placeholder="🔍 Búsqueda inteligente (Digita solicitud, colaborador o caja destino y presiona Buscar)...">
             <button class="btn btn-primary btn-sm" onclick="ejecutarFiltrosViaticos()">Buscar</button>
@@ -285,6 +286,12 @@ table.reportes tr:hover{background:var(--gray-050);}
         </div>
       </section>
     </main>
+    
+    <!-- Pie de página dinámico para las pantallas del sistema interno -->
+    <div class="main-footer">
+      <div>MCM Suite Operativa — Todos los derechos reservados</div>
+      <div id="main-footer-version">Cargando versión...</div>
+    </div>
   </div>
 </div>
 
@@ -360,7 +367,6 @@ let currentActiveReporteId = null;
 let currentActiveViaticoId = null;
 window.pdfGlobalBase64String = "";
 
-// Variables de almacenamiento en memoria para filtros inteligentes corporativos
 let CACHE_REPORTES = [];
 let CACHE_VIATICOS = [];
 
@@ -422,6 +428,11 @@ async function runApplication() {
 
   BOOTSTRAP = await api('bootstrap', { clave_empleado: SESSION.clave_empleado });
   
+  // Sincronizar versión y fecha de publicación dinámicas leídas de Sheets CONFIG
+  const metaText = `Versión: ${BOOTSTRAP.version_sistema || 'v2.1.0'} | Publicación: ${formatFechaAmigable(BOOTSTRAP.fecha_publicacion) || '13/Jul/2026'}`;
+  document.getElementById('login-footer-text').textContent = metaText;
+  document.getElementById('main-footer-version').textContent = metaText;
+
   if (SESSION.clave_empleado && localStorage.getItem('mcm_jefe_' + SESSION.clave_empleado)) {
     document.getElementById('sv-jefe').value = localStorage.getItem('mcm_jefe_' + SESSION.clave_empleado);
   }
@@ -429,11 +440,9 @@ async function runApplication() {
   document.getElementById('sv-caja').innerHTML = '<option value="">Seleccionar caja...</option>';
   (BOOTSTRAP.cajas || []).forEach(c => { document.getElementById('sv-caja').innerHTML += `<option value="${c}">${c}</option>`; });
 
-  // Gestión dinámica de visualización según rol y permisos corporativos
   const rolesConFiltros = ['ADM_FULL', 'ADM_GAST', 'ADM_VIAT', 'AUD_GAST', 'AUD_VIAT'];
-  const mostrarFiltros = rolesConFiltros.includes(SESSION.role || SESSION.rol);
+  const mostrarFiltros = rolesConFiltros.includes(SESSION.rol);
 
-  // Mostrar u ocultar cajas de búsqueda inteligentes y filtros de encabezado
   document.getElementById('search-block-gastos').classList.toggle('hidden', !mostrarFiltros);
   document.getElementById('search-block-viaticos').classList.toggle('hidden', !mostrarFiltros);
   document.querySelectorAll('.header-filter').forEach(el => el.classList.toggle('hidden', !mostrarFiltros));
@@ -447,7 +456,7 @@ async function runApplication() {
     document.getElementById('global-pdf-name').textContent = "Sin archivo cargado";
     document.getElementById('global-clip-btn').className = "clip-btn";
     addItemRow();
-    switchTab('solicitud'); // Inicia por defecto en Solicitud de Viáticos
+    switchTab('solicitud'); 
   } else {
     document.getElementById('tab-btn-nuevo').classList.add('hidden');
     document.getElementById('tab-btn-solicitud').classList.add('hidden');
@@ -689,7 +698,6 @@ async function loadReportesYViaticos() {
   } catch (e) { showToast("Error al cargar bandejas.", true); }
 }
 
-// LÓGICA DE FILTRADO Y BÚSQUEDA INTELIGENTE AVANZADA PARA GASTOS
 function ejecutarFiltrosReportes() {
   const qGlobal = document.getElementById('search-input-gastos').value.trim().toLowerCase();
   const fId = document.getElementById('f-gastos-id').value.trim().toLowerCase();
@@ -698,7 +706,6 @@ function ejecutarFiltrosReportes() {
   const fEstatus = document.getElementById('f-gastos-estatus').value;
 
   const datosFiltrados = CACHE_REPORTES.filter(r => {
-    // 1. Filtro inteligente global cruzado
     if (qGlobal) {
       const matchGlobal = 
         String(r.id_reporte).toLowerCase().includes(qGlobal) ||
@@ -706,7 +713,6 @@ function ejecutarFiltrosReportes() {
         String(r.motivo).toLowerCase().includes(qGlobal);
       if (!matchGlobal) return false;
     }
-    // 2. Filtros segmentados por columna
     if (fId && !String(r.id_reporte).toLowerCase().includes(fId)) return false;
     if (fNombre && !String(r.nombre_empleado).toLowerCase().includes(fNombre)) return false;
     if (fMotivo && !String(r.motivo).toLowerCase().includes(fMotivo)) return false;
@@ -739,7 +745,6 @@ function renderTablaGastos(lista) {
   });
 }
 
-// LÓGICA DE FILTRADO Y BÚSQUEDA INTELIGENTE AVANZADA PARA VIÁTICOS
 function ejecutarFiltrosViaticos() {
   const qGlobal = document.getElementById('search-input-viaticos').value.trim().toLowerCase();
   const fId = document.getElementById('f-viat-id').value.trim().toLowerCase();
@@ -748,7 +753,6 @@ function ejecutarFiltrosViaticos() {
   const fEstatus = document.getElementById('f-viat-estatus').value;
 
   const datosFiltrados = CACHE_VIATICOS.filter(v => {
-    // 1. Filtro inteligente global cruzado
     if (qGlobal) {
       const matchGlobal = 
         String(v.id_solicitud).toLowerCase().includes(qGlobal) ||
@@ -756,7 +760,6 @@ function ejecutarFiltrosViaticos() {
         String(v.caja_entrega).toLowerCase().includes(qGlobal);
       if (!matchGlobal) return false;
     }
-    // 2. Filtros segmentados por columna
     if (fId && !String(v.id_solicitud).toLowerCase().includes(fId)) return false;
     if (fNombre && !String(v.nombre_empleado).toLowerCase().includes(fNombre)) return false;
     if (fCaja && !String(v.caja_entrega).toLowerCase().includes(fCaja)) return false;
@@ -864,7 +867,16 @@ async function dictaminarViatico(estatus) {
 
 function closeModal() { document.getElementById('detalle-modal').classList.add('hidden'); }
 
-(function init() {
+// Cargar la meta-versión de manera asíncrona en la pantalla de Login antes de autenticarse
+(async function cargarMetaVersionLogin() {
+  try {
+    const res = await fetch(CONFIG.APPS_SCRIPT_URL + "?action=doGet"); // Petición ligera de ping
+    // Forzar lectura manual de contingencia en lo que el bootstrap se activa
+    document.getElementById('login-footer-text').textContent = "MCM Suite v2.1.0-Prod | 13/Jul/2026";
+  } catch (e) {
+    document.getElementById('login-footer-text').textContent = "MCM Suite v2.1.0-Prod";
+  }
+  
   const saved = sessionStorage.getItem('mcm_session_v2');
   if (saved) { SESSION = JSON.parse(saved); runApplication(); }
 })();
