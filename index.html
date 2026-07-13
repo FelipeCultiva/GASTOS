@@ -73,6 +73,15 @@ table.reportes th{background:var(--navy-900);color:var(--white);font-size:11px;t
 table.reportes td{padding:10px;border-bottom:1px solid var(--gray-200);font-size:13px;}
 table.reportes tr:hover{background:var(--gray-050);}
 
+.search-box-container {display:flex; gap:10px; margin-bottom:14px;}
+.search-input {flex:1; padding:9px 12px; border:1px solid var(--gray-200); border-radius:6px; font-size:13.5px;}
+
+/* Estilos específicos para los filtros en los encabezados */
+.th-filter-wrap {display: flex; flex-direction: column; gap: 4px; padding: 6px 4px;}
+.th-filter-wrap span {font-size: 11px; text-transform: uppercase;}
+.header-filter {width: 100%; padding: 4px 6px; font-size: 11px; border: 1px solid var(--gray-400); border-radius: 4px; color: var(--ink); font-weight: normal;}
+.header-filter:focus {outline: 2px solid var(--gold-500); background: var(--white);}
+
 .estatus-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;}
 .estatus-ENVIADO{background:var(--gold-100);color:#8A611C;}
 .estatus-AUTORIZADO{background:var(--green-100);color:var(--green-700);}
@@ -124,15 +133,36 @@ table.reportes tr:hover{background:var(--gray-050);}
       </div>
     </div>
 
+    <!-- REORDENAMIENTO ESTÉTICO: Viáticos -> Gastos -> Historial/Bandejas -->
     <div id="tabs">
-      <button class="tab-btn active" id="tab-btn-nuevo" onclick="switchTab('nuevo')">Comprobación de Gastos</button>
-      <button class="tab-btn" id="tab-btn-solicitud" onclick="switchTab('solicitud')">Solicitud de Viáticos</button>
+      <button class="tab-btn active" id="tab-btn-solicitud" onclick="switchTab('solicitud')">Solicitud de Viáticos</button>
+      <button class="tab-btn" id="tab-btn-nuevo" onclick="switchTab('nuevo')">Comprobación de Gastos</button>
       <button class="tab-btn" id="tab-btn-reportes" onclick="switchTab('reportes')">Bandeja Reportes / Historial</button>
     </div>
 
     <main>
-      <!-- ===================== TAB: NUEVO REPORTE GASTOS ===================== -->
-      <section id="tab-nuevo">
+      <!-- ===================== TAB: SOLICITUD VIÁTICOS (AHORA PRIMERO) ===================== -->
+      <section id="tab-solicitud">
+        <div class="card">
+          <h2>Nueva Solicitud de Viáticos (Anticipo)</h2>
+          <div class="grid-3" style="margin-bottom:14px;">
+            <div class="field"><label>Fecha Viaje Desde</label><input type="date" id="sv-desde"></div>
+            <div class="field"><label>Fecha Viaje Hasta</label><input type="date" id="sv-hasta"></div>
+            <div class="field"><label>Jefe Inmediato</label><input type="text" id="sv-jefe" placeholder="Nombre de tu superior"></div>
+          </div>
+          <div class="grid-3" style="margin-bottom:14px;">
+            <div class="field"><label>Motivo de la Solicitud</label><input type="text" id="sv-motivo" placeholder="Ej. Comisión de apertura de sucursal"></div>
+            <div class="field"><label>Monto Solicitado ($)</label><input type="number" id="sv-monto" min="1" step="0.01" lang="es-MX" placeholder="0.00" onblur="if(this.value) this.value = parseFloat(this.value).toFixed(2);"></div>
+            <div class="field"><label>Caja para Entrega de Recursos</label><select id="sv-caja"><option value="">Seleccionar caja...</option></select></div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; margin-top:18px;">
+            <button class="btn btn-gold" onclick="submitSolicitudViaticos()">Enviar Solicitud de Anticipo</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== TAB: NUEVO REPORTE GASTOS (AHORA SEGUNDO) ===================== -->
+      <section id="tab-nuevo" class="hidden">
         <div class="card">
           <h2>Datos del colaborador</h2>
           <div class="grid-4">
@@ -202,42 +232,53 @@ table.reportes tr:hover{background:var(--gray-050);}
         </div>
       </section>
 
-      <!-- ===================== TAB: SOLICITUD VIÁTICOS ===================== -->
-      <section id="tab-solicitud" class="hidden">
-        <div class="card">
-          <h2>Nueva Solicitud de Viáticos (Anticipo)</h2>
-          <div class="grid-3" style="margin-bottom:14px;">
-            <div class="field"><label>Fecha Viaje Desde</label><input type="date" id="sv-desde"></div>
-            <div class="field"><label>Fecha Viaje Hasta</label><input type="date" id="sv-hasta"></div>
-            <div class="field"><label>Jefe Inmediato</label><input type="text" id="sv-jefe" placeholder="Nombre de tu superior"></div>
-          </div>
-          <div class="grid-3" style="margin-bottom:14px;">
-            <div class="field"><label>Motivo de la Solicitud</label><input type="text" id="sv-motivo" placeholder="Ej. Comisión de apertura de sucursal"></div>
-            <div class="field"><label>Monto Solicitado ($)</label><input type="number" id="sv-monto" min="1" step="0.01" lang="es-MX" placeholder="0.00" onblur="if(this.value) this.value = parseFloat(this.value).toFixed(2);"></div>
-            <div class="field"><label>Caja para Entrega de Recursos</label><select id="sv-caja"><option value="">Seleccionar caja...</option></select></div>
-          </div>
-          <div style="display:flex; justify-content:flex-end; margin-top:18px;">
-            <button class="btn btn-gold" onclick="submitSolicitudViaticos()">Enviar Solicitud de Anticipo</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===================== TAB: BANDEJA DE REPORTES ===================== -->
+      <!-- ===================== TAB: BANDEJA DE REPORTES (TERCERO) ===================== -->
       <section id="tab-reportes" class="hidden">
         <div class="card">
           <h2>Bandeja de Reportes de Gastos</h2>
-          <table class="reportes">
+          
+          <!-- Control de búsqueda inteligente global para gastos -->
+          <div id="search-block-gastos" class="search-box-container hidden">
+            <input type="text" id="search-input-gastos" class="search-input" placeholder="🔍 Búsqueda inteligente (Digita folio, colaborador o motivo y presiona Buscar)...">
+            <button class="btn btn-primary btn-sm" onclick="ejecutarFiltrosReportes()">Buscar</button>
+          </div>
+
+          <table class="reportes" id="table-gastos-principal">
             <thead>
-              <tr><th>ID Folio</th><th>Colaborador</th><th>Periodo</th><th>Motivo</th><th>Total</th><th>Estatus</th><th>Acciones</th></tr>
+              <tr>
+                <th><div class="th-filter-wrap"><span>ID Folio</span><input type="text" id="f-gastos-id" class="header-filter hidden" oninput="ejecutarFiltrosReportes()"></div></th>
+                <th><div class="th-filter-wrap"><span>Colaborador</span><input type="text" id="f-gastos-nombre" class="header-filter hidden" oninput="ejecutarFiltrosReportes()"></div></th>
+                <th><div class="th-filter-wrap"><span>Periodo</span></div></th>
+                <th><div class="th-filter-wrap"><span>Motivo</span><input type="text" id="f-gastos-motivo" class="header-filter hidden" oninput="ejecutarFiltrosReportes()"></div></th>
+                <th><div class="th-filter-wrap"><span>Total</span></div></th>
+                <th><div class="th-filter-wrap"><span>Estatus</span><select id="f-gastos-estatus" class="header-filter hidden" onchange="ejecutarFiltrosReportes()"><option value="">Todos</option><option value="ENVIADO">ENVIADO</option><option value="AUTORIZADO">AUTORIZADO</option><option value="RECHAZADO">RECHAZADO</option></select></div></th>
+                <th>Acciones</th>
+              </tr>
             </thead>
             <tbody id="reportes-tbody"></tbody>
           </table>
         </div>
+        
         <div class="card">
           <h2>Bandeja de Solicitudes de Viáticos</h2>
-          <table class="reportes">
+
+          <!-- Control de búsqueda inteligente global para viáticos -->
+          <div id="search-block-viaticos" class="search-box-container hidden">
+            <input type="text" id="search-input-viaticos" class="search-input" placeholder="🔍 Búsqueda inteligente (Digita solicitud, colaborador o caja destino y presiona Buscar)...">
+            <button class="btn btn-primary btn-sm" onclick="ejecutarFiltrosViaticos()">Buscar</button>
+          </div>
+
+          <table class="reportes" id="table-viaticos-principal">
             <thead>
-              <tr><th>ID Solicitud</th><th>Colaborador</th><th>Periodo Viaje</th><th>Monto</th><th>Caja Destino</th><th>Estatus</th><th>Acciones</th></tr>
+              <tr>
+                <th><div class="th-filter-wrap"><span>ID Solicitud</span><input type="text" id="f-viat-id" class="header-filter hidden" oninput="ejecutarFiltrosViaticos()"></div></th>
+                <th><div class="th-filter-wrap"><span>Colaborador</span><input type="text" id="f-viat-nombre" class="header-filter hidden" oninput="ejecutarFiltrosViaticos()"></div></th>
+                <th><div class="th-filter-wrap"><span>Periodo Viaje</span></div></th>
+                <th><div class="th-filter-wrap"><span>Monto</span></div></th>
+                <th><div class="th-filter-wrap"><span>Caja Destino</span><input type="text" id="f-viat-caja" class="header-filter hidden" oninput="ejecutarFiltrosViaticos()"></div></th>
+                <th><div class="th-filter-wrap"><span>Estatus</span><select id="f-viat-estatus" class="header-filter hidden" onchange="ejecutarFiltrosViaticos()"><option value="">Todos</option><option value="ENVIADO">ENVIADO</option><option value="AUTORIZADO">AUTORIZADO</option><option value="RECHAZADO">RECHAZADO</option></select></div></th>
+                <th>Acciones</th>
+              </tr>
             </thead>
             <tbody id="viaticos-tbody"></tbody>
           </table>
@@ -294,7 +335,7 @@ table.reportes tr:hover{background:var(--gray-050);}
 
 <script>
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxWoY3fQyFECSCATy_nRHVmf_exJ-NHzstJcapmor10YHhwHSFscP1UdPuByyP2uWpc/exec"
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwxKosinVMD64akwMR1Z9jhVhs91FQj0wyCGQub-9scwVd7ucCQz0XMlHuFQEaf_JP6/exec"
 };
 
 function formatFechaAmigable(fechaStr) {
@@ -318,6 +359,10 @@ let editingId = null;
 let currentActiveReporteId = null;
 let currentActiveViaticoId = null;
 window.pdfGlobalBase64String = "";
+
+// Variables de almacenamiento en memoria para filtros inteligentes corporativos
+let CACHE_REPORTES = [];
+let CACHE_VIATICOS = [];
 
 async function api(action, payload) {
   showLoading(true);
@@ -384,6 +429,15 @@ async function runApplication() {
   document.getElementById('sv-caja').innerHTML = '<option value="">Seleccionar caja...</option>';
   (BOOTSTRAP.cajas || []).forEach(c => { document.getElementById('sv-caja').innerHTML += `<option value="${c}">${c}</option>`; });
 
+  // Gestión dinámica de visualización según rol y permisos corporativos
+  const rolesConFiltros = ['ADM_FULL', 'ADM_GAST', 'ADM_VIAT', 'AUD_GAST', 'AUD_VIAT'];
+  const mostrarFiltros = rolesConFiltros.includes(SESSION.role || SESSION.rol);
+
+  // Mostrar u ocultar cajas de búsqueda inteligentes y filtros de encabezado
+  document.getElementById('search-block-gastos').classList.toggle('hidden', !mostrarFiltros);
+  document.getElementById('search-block-viaticos').classList.toggle('hidden', !mostrarFiltros);
+  document.querySelectorAll('.header-filter').forEach(el => el.classList.toggle('hidden', !mostrarFiltros));
+
   if (SESSION.clave_empleado && SESSION.clave_empleado.trim() !== "") {
     document.getElementById('tab-btn-nuevo').classList.remove('hidden');
     document.getElementById('tab-btn-solicitud').classList.remove('hidden');
@@ -393,7 +447,7 @@ async function runApplication() {
     document.getElementById('global-pdf-name').textContent = "Sin archivo cargado";
     document.getElementById('global-clip-btn').className = "clip-btn";
     addItemRow();
-    switchTab('nuevo');
+    switchTab('solicitud'); // Inicia por defecto en Solicitud de Viáticos
   } else {
     document.getElementById('tab-btn-nuevo').classList.add('hidden');
     document.getElementById('tab-btn-solicitud').classList.add('hidden');
@@ -550,7 +604,7 @@ async function submitReporte() {
     if (!it.descripcion || !it.descripcion.trim()) return showToast(`Fila ${n}: La descripción del gasto es obligatoria.`, true);
     if (!it.agencia_area) return showToast(`Fila ${n}: Debe seleccionar una Agencia / Área del catálogo.`, true);
     const montoNum = parseFloat(it.monto);
-    if (isNaN(montoNum) || montoNum <= 0) return showToast(`Fila ${n}: El monto debe ser un número válido and mayor a cero.`, true);
+    if (isNaN(montoNum) || montoNum <= 0) return showToast(`Fila ${n}: El monto debe ser un número válido y mayor a cero.`, true);
     if (it.fecha < desde || it.fecha > hasta) return showToast(`Fila ${n}: La fecha está fuera del periodo declarado (${formatFechaAmigable(desde)} al ${formatFechaAmigable(hasta)}).`, true);
   }
 
@@ -564,7 +618,7 @@ async function submitReporte() {
     periodo_hasta: hasta,
     motivo: motivo, 
     items: ITEMS, 
-    pdfGlobalBase64: archivoAdjunto // CORRECCIÓN: Sincronizado con la variable de arriba
+    pdfGlobalBase64: archivoAdjunto
   };
 
   try {
@@ -626,50 +680,114 @@ function cancelEdit() {
 async function loadReportesYViaticos() {
   try {
     const repData = await api('listReportes', { rol: SESSION.rol, clave_empleado: SESSION.clave_empleado });
-    const tbodyR = document.getElementById('reportes-tbody'); tbodyR.innerHTML = '';
-    
-    repData.reportes.forEach(r => {
-      const puedeDictaminar = (SESSION.rol === 'ADM_FULL' || SESSION.rol === 'ADM_GAST') && r.estatus === 'ENVIADO';
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><b>${r.id_reporte}</b></td><td>${r.nombre_empleado}</td>
-        <td>${formatFechaAmigable(r.periodo_desde)} / ${formatFechaAmigable(r.periodo_hasta)}</td>
-        <td>${r.motivo}</td><td>$${Number(r.total_gastos).toLocaleString('es-MX')}</td>
-        <td><span class="estatus-pill estatus-${r.estatus}">${r.estatus}</span></td>
-        <td>
-          <button class="btn btn-outline btn-sm" onclick="openReporteDetalle('${r.id_reporte}', ${puedeDictaminar})">Revisar</button>
-          ${r.estatus === 'RECHAZADO' && r.clave_empleado === SESSION.clave_empleado ? `<button class="btn btn-gold btn-sm" onclick="editRechazado('${r.id_reporte}')">Corregir</button>` : ''}
-        </td>
-      `;
-      tbodyR.appendChild(tr);
-    });
+    CACHE_REPORTES = repData.reportes || [];
+    ejecutarFiltrosReportes();
 
     const viaData = await api('listViaticos', { rol: SESSION.rol, clave_empleado: SESSION.clave_empleado });
-    const tbodyV = document.getElementById('viaticos-tbody'); tbodyV.innerHTML = '';
-    viaData.solicitudes.forEach(v => {
-      const puedeDictaminarV = (SESSION.rol === 'ADM_FULL' || SESSION.rol === 'ADM_VIAT') && v.estatus === 'ENVIADO';
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><b>${v.id_solicitud}</b></td><td>${v.nombre_empleado}</td><td>${formatFechaAmigable(v.periodo_desde)} al ${formatFechaAmigable(v.periodo_hasta)}</td>
-        <td>$${Number(v.monto_solicitado).toLocaleString('es-MX')}</td><td>${v.caja_entrega}</td><td><span class="estatus-pill estatus-${v.estatus}">${v.estatus}</span></td>
-        <td>${puedeDictaminarV ? `<button class="btn btn-gold btn-sm" onclick="openViaticoModal('${v.id_solicitud}','${v.nombre_empleado}','${v.monto_solicitado}')">Dictaminar</button>` : '—'}</td>
-      `;
-      tbodyV.appendChild(tr);
-    });
+    CACHE_VIATICOS = viaData.solicitudes || [];
+    ejecutarFiltrosViaticos();
   } catch (e) { showToast("Error al cargar bandejas.", true); }
+}
+
+// LÓGICA DE FILTRADO Y BÚSQUEDA INTELIGENTE AVANZADA PARA GASTOS
+function ejecutarFiltrosReportes() {
+  const qGlobal = document.getElementById('search-input-gastos').value.trim().toLowerCase();
+  const fId = document.getElementById('f-gastos-id').value.trim().toLowerCase();
+  const fNombre = document.getElementById('f-gastos-nombre').value.trim().toLowerCase();
+  const fMotivo = document.getElementById('f-gastos-motivo').value.trim().toLowerCase();
+  const fEstatus = document.getElementById('f-gastos-estatus').value;
+
+  const datosFiltrados = CACHE_REPORTES.filter(r => {
+    // 1. Filtro inteligente global cruzado
+    if (qGlobal) {
+      const matchGlobal = 
+        String(r.id_reporte).toLowerCase().includes(qGlobal) ||
+        String(r.nombre_empleado).toLowerCase().includes(qGlobal) ||
+        String(r.motivo).toLowerCase().includes(qGlobal);
+      if (!matchGlobal) return false;
+    }
+    // 2. Filtros segmentados por columna
+    if (fId && !String(r.id_reporte).toLowerCase().includes(fId)) return false;
+    if (fNombre && !String(r.nombre_empleado).toLowerCase().includes(fNombre)) return false;
+    if (fMotivo && !String(r.motivo).toLowerCase().includes(fMotivo)) return false;
+    if (fEstatus && String(r.estatus) !== fEstatus) return false;
+    
+    return true;
+  });
+
+  renderTablaGastos(datosFiltrados);
+}
+
+function renderTablaGastos(lista) {
+  const tbodyR = document.getElementById('reportes-tbody'); 
+  tbodyR.innerHTML = '';
+  
+  lista.forEach(r => {
+    const puedeDictaminar = (SESSION.rol === 'ADM_FULL' || SESSION.rol === 'ADM_GAST') && r.estatus === 'ENVIADO';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><b>${r.id_reporte}</b></td><td>${r.nombre_empleado}</td>
+      <td>${formatFechaAmigable(r.periodo_desde)} / ${formatFechaAmigable(r.periodo_hasta)}</td>
+      <td>${r.motivo}</td><td>$${Number(r.total_gastos).toLocaleString('es-MX')}</td>
+      <td><span class="estatus-pill estatus-${r.estatus}">${r.estatus}</span></td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="openReporteDetalle('${r.id_reporte}', ${puedeDictaminar})">Revisar</button>
+        ${r.estatus === 'RECHAZADO' && r.clave_empleado === SESSION.clave_empleado ? `<button class="btn btn-gold btn-sm" onclick="editRechazado('${r.id_reporte}')">Corregir</button>` : ''}
+      </td>
+    `;
+    tbodyR.appendChild(tr);
+  });
+}
+
+// LÓGICA DE FILTRADO Y BÚSQUEDA INTELIGENTE AVANZADA PARA VIÁTICOS
+function ejecutarFiltrosViaticos() {
+  const qGlobal = document.getElementById('search-input-viaticos').value.trim().toLowerCase();
+  const fId = document.getElementById('f-viat-id').value.trim().toLowerCase();
+  const fNombre = document.getElementById('f-viat-nombre').value.trim().toLowerCase();
+  const fCaja = document.getElementById('f-viat-caja').value.trim().toLowerCase();
+  const fEstatus = document.getElementById('f-viat-estatus').value;
+
+  const datosFiltrados = CACHE_VIATICOS.filter(v => {
+    // 1. Filtro inteligente global cruzado
+    if (qGlobal) {
+      const matchGlobal = 
+        String(v.id_solicitud).toLowerCase().includes(qGlobal) ||
+        String(v.nombre_empleado).toLowerCase().includes(qGlobal) ||
+        String(v.caja_entrega).toLowerCase().includes(qGlobal);
+      if (!matchGlobal) return false;
+    }
+    // 2. Filtros segmentados por columna
+    if (fId && !String(v.id_solicitud).toLowerCase().includes(fId)) return false;
+    if (fNombre && !String(v.nombre_empleado).toLowerCase().includes(fNombre)) return false;
+    if (fCaja && !String(v.caja_entrega).toLowerCase().includes(fCaja)) return false;
+    if (fEstatus && String(v.estatus) !== fEstatus) return false;
+    
+    return true;
+  });
+
+  renderTablaViaticos(datosFiltrados);
+}
+
+function renderTablaViaticos(lista) {
+  const tbodyV = document.getElementById('viaticos-tbody'); 
+  tbodyV.innerHTML = '';
+  
+  lista.forEach(v => {
+    const puedeDictaminarV = (SESSION.rol === 'ADM_FULL' || SESSION.rol === 'ADM_VIAT') && v.estatus === 'ENVIADO';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><b>${v.id_solicitud}</b></td><td>${v.nombre_empleado}</td><td>${formatFechaAmigable(v.periodo_desde)} al ${formatFechaAmigable(v.periodo_hasta)}</td>
+      <td>$${Number(v.monto_solicitado).toLocaleString('es-MX')}</td><td>${v.caja_entrega}</td><td><span class="estatus-pill estatus-${v.estatus}">${v.estatus}</span></td>
+      <td>${puedeDictaminarV ? `<button class="btn btn-gold btn-sm" onclick="openViaticoModal('${v.id_solicitud}','${v.nombre_empleado}','${v.monto_solicitado}')">Dictaminar</button>` : '—'}</td>
+    `;
+    tbodyV.appendChild(tr);
+  });
 }
 
 async function openReporteDetalle(idReporte, puedeDictaminar) {
   currentActiveReporteId = idReporte;
-  
-  // 1. Limpieza absoluta y forzada del cuadro de texto de comentarios administrativos
-  const txtComment = document.getElementById('admin-comment');
-  if (txtComment) {
-    txtComment.value = '';
-  }
-  
+  document.getElementById('admin-comment').value = ''; 
   document.getElementById('detalle-titulo').textContent = `Auditoría General - Folio: ${idReporte}`;
-  
   if(puedeDictaminar) document.getElementById('admin-actions-block').classList.remove('hidden');
   else document.getElementById('admin-actions-block').classList.add('hidden');
 
@@ -678,7 +796,6 @@ async function openReporteDetalle(idReporte, puedeDictaminar) {
     const tbody = document.getElementById('detalle-tbody');
     tbody.innerHTML = '';
 
-    // CORRECCIÓN DE QA: Inyección de celdas con alineación exacta 1 a 1 para las 6 columnas
     res.registros.forEach(reg => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
