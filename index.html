@@ -661,7 +661,15 @@ async function loadReportesYViaticos() {
 
 async function openReporteDetalle(idReporte, puedeDictaminar) {
   currentActiveReporteId = idReporte;
+  
+  // 1. Limpieza absoluta y forzada del cuadro de texto de comentarios administrativos
+  const txtComment = document.getElementById('admin-comment');
+  if (txtComment) {
+    txtComment.value = '';
+  }
+  
   document.getElementById('detalle-titulo').textContent = `Auditoría General - Folio: ${idReporte}`;
+  
   if(puedeDictaminar) document.getElementById('admin-actions-block').classList.remove('hidden');
   else document.getElementById('admin-actions-block').classList.add('hidden');
 
@@ -670,11 +678,16 @@ async function openReporteDetalle(idReporte, puedeDictaminar) {
     const tbody = document.getElementById('detalle-tbody');
     tbody.innerHTML = '';
 
+    // CORRECCIÓN DE QA: Inyección de celdas con alineación exacta 1 a 1 para las 6 columnas
     res.registros.forEach(reg => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><b>${reg.categoria}</b></td><td>${reg.concepto}</td><td>${reg.descripcion}</td>
-        <td>${reg.agencia_area || '—'}</td><td style="text-align:right;">$${Number(reg.monto).toLocaleString('es-MX')}</td>
+        <td><b>${reg.categoria || '—'}</b></td>
+        <td>${reg.concepto || '—'}</td>
+        <td>${reg.descripcion || '—'}</td>
+        <td>${reg.justificacion || '—'}</td>
+        <td>${reg.agencia_area || '—'}</td>
+        <td style="text-align:right;">$${Number(reg.monto || 0).toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
       `;
       tbody.appendChild(tr);
     });
