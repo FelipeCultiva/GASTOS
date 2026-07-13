@@ -531,14 +531,19 @@ function computeTotal() {
   document.getElementById('total-val').textContent = '$' + total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-async function submitReporte() {
+async function submitReporte() {async function submitReporte() {
   const desde = document.getElementById('periodo-desde').value;
   const hasta = document.getElementById('periodo-hasta').value;
   const motivo = document.getElementById('motivo').value.trim();
+  
+  // CORRECCIÓN: Leer el buffer de la ventana global desde el inicio de la validación
+  const archivoAdjunto = window.pdfGlobalBase64String || "";
 
   if (!desde || !hasta || !motivo) return showToast("Por favor complementa el periodo (Desde / Hasta) y el motivo del reporte.", true);
   if (ITEMS.length === 0) return showToast("Debe agregar al menos una línea de gasto.", true);
-  if (!pdfGlobalBase64String && !editingId) return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
+  
+  // CORRECCIÓN: Validar con la variable unificada
+  if (!archivoAdjunto && !editingId) return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
 
   for (let i = 0; i < ITEMS.length; i++) {
     const it = ITEMS[i];
@@ -562,6 +567,7 @@ async function submitReporte() {
   }
 
   const payload = {
+    const payload = {
     clave_empleado: BOOTSTRAP.empleado.clave, 
     nombre_empleado: BOOTSTRAP.empleado.nombre,
     puesto: BOOTSTRAP.empleado.puesto, 
@@ -571,7 +577,7 @@ async function submitReporte() {
     periodo_hasta: hasta,
     motivo: motivo, 
     items: ITEMS, 
-    pdfGlobalBase64: archivoAdjunto // CORRECCIÓN: Asegurar el envío correcto al servidor
+    pdfGlobalBase64: archivoAdjunto // CORRECCIÓN: Sincronizado con la variable de arriba
   };
 
   try {
