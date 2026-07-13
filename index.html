@@ -317,7 +317,7 @@ let rowSeq = 0;
 let editingId = null;
 let currentActiveReporteId = null;
 let currentActiveViaticoId = null;
-let pdfGlobalBase64String = "";
+window.pdfGlobalBase64String = "";
 
 async function api(action, payload) {
   showLoading(true);
@@ -389,7 +389,7 @@ async function runApplication() {
     document.getElementById('tab-btn-solicitud').classList.remove('hidden');
     document.getElementById('tab-btn-reportes').textContent = (!SESSION.permisos.revisa_gastos && !SESSION.permisos.revisa_viaticos) ? "Mis Solicitudes / Historial" : "Bandeja Reportes / Historial";
     fillEmpleadoCard();
-    ITEMS = []; editingId = null; pdfGlobalBase64String = "";
+    ITEMS = []; editingId = null; window.pdfGlobalBase64String = "";
     document.getElementById('global-pdf-name').textContent = "Sin archivo cargado";
     document.getElementById('global-clip-btn').className = "clip-btn";
     addItemRow();
@@ -464,9 +464,7 @@ function processGlobalFile(inputElement) {
 
   const reader = new FileReader();
   reader.onload = function(e) {
-    // CORRECCIÓN: Forzar la asignación exacta al buffer global de la ventana
     window.pdfGlobalBase64String = e.target.result;
-    
     document.getElementById('global-pdf-name').textContent = `📎 ${file.name} listo para envío`;
     document.getElementById('global-clip-btn').className = "clip-btn loaded";
     showToast("PDF Global indexado con éxito.");
@@ -531,18 +529,15 @@ function computeTotal() {
   document.getElementById('total-val').textContent = '$' + total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-async function submitReporte() {async function submitReporte() {
+async function submitReporte() {
   const desde = document.getElementById('periodo-desde').value;
   const hasta = document.getElementById('periodo-hasta').value;
   const motivo = document.getElementById('motivo').value.trim();
   
-  // CORRECCIÓN: Leer el buffer de la ventana global desde el inicio de la validación
   const archivoAdjunto = window.pdfGlobalBase64String || "";
 
   if (!desde || !hasta || !motivo) return showToast("Por favor complementa el periodo (Desde / Hasta) y el motivo del reporte.", true);
   if (ITEMS.length === 0) return showToast("Debe agregar al menos una línea de gasto.", true);
-  
-  // CORRECCIÓN: Validar con la variable unificada
   if (!archivoAdjunto && !editingId) return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
 
   for (let i = 0; i < ITEMS.length; i++) {
@@ -559,15 +554,7 @@ async function submitReporte() {async function submitReporte() {
     if (it.fecha < desde || it.fecha > hasta) return showToast(`Fila ${n}: La fecha está fuera del periodo declarado (${formatFechaAmigable(desde)} al ${formatFechaAmigable(hasta)}).`, true);
   }
 
-  // Obtener el string guardado de forma segura en la ventana global
-  const archivoAdjunto = window.pdfGlobalBase64String || "";
-
-  if (!archivoAdjunto && !editingId) {
-    return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
-  }
-
   const payload = {
-    const payload = {
     clave_empleado: BOOTSTRAP.empleado.clave, 
     nombre_empleado: BOOTSTRAP.empleado.nombre,
     puesto: BOOTSTRAP.empleado.puesto, 
@@ -577,7 +564,7 @@ async function submitReporte() {async function submitReporte() {
     periodo_hasta: hasta,
     motivo: motivo, 
     items: ITEMS, 
-    pdfGlobalBase64: archivoAdjunto // CORRECCIÓN: Sincronizado con la variable de arriba
+    pdfGlobalBase64: archivoAdjunto
   };
 
   try {
@@ -620,7 +607,7 @@ async function submitSolicitudViaticos() {
 
 function cancelEdit() {
   editingId = null; 
-  window.pdfGlobalBase64String = ""; // CORRECCIÓN: Resetear el buffer global
+  window.pdfGlobalBase64String = "";
   document.getElementById('submit-btn').textContent = 'Enviar Reporte a Revisión';
   document.getElementById('cancel-edit-btn').classList.add('hidden');
   document.getElementById('motivo').value = ''; 
@@ -719,7 +706,7 @@ async function editRechazado(idReporte) {
     const res = await api('getReporteDetalle', { id_reporte: idReporte });
     ITEMS = res.registros.map(r => ({
       id: 'row_' + (++rowSeq), fecha: r.fecha, categoria: r.categoria, comprobante: r.comprobante, concepto: r.concepto,
-      descripcion: r.descripcion, justificacion: r.justificacion, agencia_area: r.agencia_area, monto: r.monto
+      descripcion: r.descripcion, justificacion: r.justificacion, agency_area: r.agencia_area, monto: r.monto
     }));
     editingId = idReporte;
     document.getElementById('submit-btn').textContent = 'Guardar y Reenviar Reporte';
