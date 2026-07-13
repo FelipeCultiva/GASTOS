@@ -294,7 +294,7 @@ table.reportes tr:hover{background:var(--gray-050);}
 
 <script>
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwtIw0D_QeKi5fGsUD9c2-Jheh3F_Z3Cq3opCYlnaSBO-yl2ELtg4JMM4O47W9dsMlj/exec"
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyq5mRoRWBtzMzawO3lHZ8Qi993uY4k6nv2YujbT83hA2nwIqxb4YUKjR5U40oNq3y7/exec"
 };
 
 function formatFechaAmigable(fechaStr) {
@@ -706,7 +706,7 @@ async function editRechazado(idReporte) {
     const res = await api('getReporteDetalle', { id_reporte: idReporte });
     ITEMS = res.registros.map(r => ({
       id: 'row_' + (++rowSeq), fecha: r.fecha, categoria: r.categoria, comprobante: r.comprobante, concepto: r.concepto,
-      descripcion: r.descripcion, justificacion: r.justificacion, agency_area: r.agencia_area, monto: r.monto
+      descripcion: r.descripcion, justificacion: r.justificacion, agencia_area: r.agencia_area, monto: r.monto
     }));
     editingId = idReporte;
     document.getElementById('submit-btn').textContent = 'Guardar y Reenviar Reporte';
