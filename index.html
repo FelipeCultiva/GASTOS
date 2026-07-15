@@ -54,10 +54,12 @@ input,select,textarea{font-family:inherit;}
 .tab-btn.active{color:var(--navy-900);border-bottom-color:var(--gold-600);}
 
 main{flex:1;max-width:1280px;width:100%;margin:0 auto;padding:24px 26px 40px;}
-.card{background:var(--white);border:1px solid var(--gray-200);border-radius:10px;padding:20px 22px;margin-bottom:18px;}
+.card{background:var(--white);border:1px solid var(--gray-200);border-radius:10px;padding:20px 22px;margin-bottom:18px;position:relative;}
 .card h2{font-family:'Libre Franklin',sans-serif;font-size:14px;text-transform:uppercase;color:var(--navy-900);margin:0 0 16px 0;}
-.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+
+/* REQUERIMIENTO 4: Diseño responsivo adaptado 100% a móviles */
+.grid-4, .grid-3{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;}
+
 .readonly-field{background:var(--gray-050);border:1px solid var(--gray-200);border-radius:6px;padding:9px 12px;}
 .readonly-field .lbl{font-size:10.5px;color:var(--gray-500);text-transform:uppercase;margin-bottom:3px;}
 .readonly-field .val{font-weight:600;color:var(--navy-900);font-family:'IBM Plex Mono',monospace;font-size:12.5px;}
@@ -86,6 +88,11 @@ table.reportes tr:hover{background:var(--gray-050);}
 .estatus-AUTORIZADO{background:var(--green-100);color:var(--green-700);}
 .estatus-RECHAZADO{background:var(--red-100);color:var(--red-700);}
 
+/* REQUERIMIENTO 5: Cuadros de diálogo estéticos para motivos de rechazo */
+.rechazo-box {background: var(--red-100); border-left: 5px solid var(--red-700); padding: 14px; border-radius: 6px; margin-top: 15px;}
+.rechazo-box h4 {margin: 0 0 5px 0; color: var(--red-700); font-size: 13px; text-transform: uppercase;}
+.rechazo-box p {margin: 0; font-size: 13px; color: var(--ink); font-family: 'IBM Plex Mono', monospace;}
+
 .split-modal-box{background:var(--white);border-radius:10px;width:95vw;max-width:1400px;height:90vh;display:flex;flex-direction:column;padding:20px;overflow:hidden;}
 .split-modal-body{display:flex;flex:1;gap:20px;overflow:hidden;margin-top:14px;}
 .split-left{flex:1;overflow-y:auto;padding-right:5px;}
@@ -95,44 +102,30 @@ table.reportes tr:hover{background:var(--gray-050);}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy-900);color:var(--white);padding:12px 20px;border-radius:8px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.25);z-index:3000;display:none;}
 .toast.show{display:block;}
 .toast.error{background:var(--red-700);}
-/* Nuevo cargador dinámico con animación de reloj/esfera */
+
 .loading-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(11, 37, 69, 0.92);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  z-index: 4000;
-  color: var(--white);
-  font-family: 'IBM Plex Sans', sans-serif;
-}
-.loading-overlay h2 {
-  font-size: 18px;
-  font-weight: 500;
-  margin: 0;
-  letter-spacing: 0.5px;
+  position: fixed; inset: 0; background: rgba(11, 37, 69, 0.92);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; z-index: 4000; color: var(--white);
 }
 .spinner-clock {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--gray-400);
-  border-top-color: var(--gold-500);
-  border-radius: 50%;
-  animation: spinClock 1s linear infinite;
+  width: 48px; height: 48px; border: 4px solid var(--gray-400); border-top-color: var(--gold-500); border-radius: 50%; animation: spinClock 1s linear infinite;
 }
-@keyframes spinClock {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-.clip-btn{background:var(--gray-200);border:1px solid var(--gray-400);border-radius:4px;padding:6px 12px;font-size:12px;font-weight:600;}
-.clip-btn.loaded{background:var(--green-100);color:var(--green-700);border-color:var(--green-700);}
+@keyframes spinClock { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* Estilos de pie de página estéticos para versionamiento */
 .footer-version {text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gray-400); margin-top:16px;}
 .main-footer {max-width:1280px; width:100%; margin:0 auto; padding:0 26px 20px; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gray-500);}
+
+/* REQUERIMIENTO 3: Reglas de impresión ajustadas al ancho de hoja Carta */
+@media print {
+  body { background: white; color: black; }
+  #topbar, #tabs, .btn, #global-clip-btn, .search-box-container, .main-footer, .th-filter-wrap input, .th-filter-wrap select { display: none !important; }
+  main { padding: 0; }
+  .card { border: none; box-shadow: none; padding: 0; margin-bottom: 30px; page-break-inside: avoid; }
+  section { display: none !important; }
+  section.print-active { display: block !important; }
+  table.items { min-width: 100% !important; width: 100% !important; }
+  th { background: #0B2545 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
 </style>
 </head>
 <body>
@@ -160,7 +153,7 @@ table.reportes tr:hover{background:var(--gray-050);}
   <!-- ===================== MAIN SCREEN ===================== -->
   <div id="main-screen" class="hidden">
     <div id="topbar">
-      <div class="brand">MAS CON MENOS <span>| MÓDULO VIATICOS</span></div>
+      <div class="brand">MAS CON MENOS <span>| Suite Operativa</span></div>
       <div class="userinfo">
         <span id="userinfo-nombre"></span>
         <span id="userinfo-rol" class="role-badge"></span>
@@ -177,7 +170,21 @@ table.reportes tr:hover{background:var(--gray-050);}
     <main>
       <!-- ===================== TAB: SOLICITUD VIÁTICOS ===================== -->
       <section id="tab-solicitud">
+        <!-- REQUERIMIENTO 1: Mismo encabezado de colaborador desplegado aquí -->
+        <div class="card header-colaborador-block">
+          <h2>Datos del colaborador</h2>
+          <div class="grid-4">
+            <div class="readonly-field"><div class="lbl">No. Colaborador</div><div class="val emp-nro-val">—</div></div>
+            <div class="readonly-field"><div class="lbl">Nombre</div><div class="val emp-nombre-val">—</div></div>
+            <div class="readonly-field"><div class="lbl">Puesto</div><div class="val emp-puesto-val">—</div></div>
+            <div class="readonly-field"><div class="lbl">Centro de Costo</div><div class="val emp-cc-val">—</div></div>
+          </div>
+        </div>
+
         <div class="card">
+          <div style="position:absolute; right:20px; top:15px;">
+            <button class="btn btn-outline btn-sm" onclick="imprimirPantalla('tab-solicitud')">🖨️ Imprimir Solicitud</button>
+          </div>
           <h2>Nueva Solicitud de Viáticos (Anticipo)</h2>
           <div class="grid-3" style="margin-bottom:14px;">
             <div class="field"><label>Fecha Viaje Desde</label><input type="date" id="sv-desde"></div>
@@ -186,9 +193,16 @@ table.reportes tr:hover{background:var(--gray-050);}
           </div>
           <div class="grid-3" style="margin-bottom:14px;">
             <div class="field"><label>Motivo de la Solicitud</label><input type="text" id="sv-motivo" placeholder="Ej. Comisión de apertura de sucursal"></div>
-            <div class="field"><label>Monto Solicitado ($)</label><input type="number" id="sv-monto" min="1" step="0.01" lang="es-MX" placeholder="0.00" onblur="if(this.value) this.value = parseFloat(this.value).toFixed(2);"></div>
+            <div class="field"><label>Monto Solicitado ($)</label><input type="number" id="sv-monto" min="1" step="0.01" placeholder="0.00" onblur="if(this.value) this.value = parseFloat(this.value).toFixed(2);"></div>
             <div class="field"><label>Caja para Entrega de Recursos</label><select id="sv-caja"><option value="">Seleccionar caja...</option></select></div>
           </div>
+          
+          <!-- REQUERIMIENTO 5: Diálogo de rechazo en Viáticos -->
+          <div id="rechazo-viatico-container" class="rechazo-box hidden">
+            <h4>Motivo de Rechazo Administrativo:</h4>
+            <p id="rechazo-viatico-texto"></p>
+          </div>
+
           <div style="display:flex; justify-content:flex-end; margin-top:18px;">
             <button class="btn btn-gold" onclick="submitSolicitudViaticos()">Enviar Solicitud de Anticipo</button>
           </div>
@@ -200,28 +214,28 @@ table.reportes tr:hover{background:var(--gray-050);}
         <div class="card">
           <h2>Datos del colaborador</h2>
           <div class="grid-4">
-            <div class="readonly-field"><div class="lbl">No. Colaborador</div><div class="val" id="emp-nro">—</div></div>
-            <div class="readonly-field"><div class="lbl">Nombre</div><div class="val" id="emp-nombre">—</div></div>
-            <div class="readonly-field"><div class="lbl">Puesto</div><div class="val" id="emp-puesto">—</div></div>
-            <div class="readonly-field"><div class="lbl">Centro de Costo</div><div class="val" id="emp-cc">—</div></div>
+            <div class="readonly-field"><div class="lbl">No. Colaborador</div><div class="val emp-nro-val">—</div></div>
+            <div class="readonly-field"><div class="lbl">Nombre</div><div class="val emp-nombre-val">—</div></div>
+            <div class="readonly-field"><div class="lbl">Puesto</div><div class="val emp-puesto-val">—</div></div>
+            <div class="readonly-field"><div class="lbl">Centro de Costo</div><div class="val emp-cc-val">—</div></div>
           </div>
         </div>
         
         <div class="card">
+          <!-- REQUERIMIENTO 2: Campo superior derecho de Monto Asignado -->
+          <div style="position:absolute; right:20px; top:15px; display:flex; gap:10px; align-items:center;">
+            <div class="field" style="margin:0; width:190px;">
+              <label style="font-size:10px;">Monto Viáticos Asignado ($)</label>
+              <input type="number" id="monto-asignado-input" placeholder="0.00" step="0.01" style="padding:6px 10px; font-size:13px;" oninput="calcularDiferenciaViaticos()">
+            </div>
+            <button class="btn btn-outline btn-sm" style="margin-top:16px;" onclick="imprimirPantalla('tab-nuevo')">🖨️ Imprimir Reporte</button>
+          </div>
+
           <h2>Periodo de comprobación</h2>
-          <div class="grid-3">
-            <div class="field">
-              <label>Desde</label>
-              <input type="date" id="periodo-desde" onchange="actualizarLimitesCalendario()">
-            </div>
-            <div class="field">
-              <label>Hasta</label>
-              <input type="date" id="periodo-hasta" onchange="actualizarLimitesCalendario()">
-            </div>
-            <div class="field">
-              <label>Motivo</label>
-              <input type="text" id="motivo" placeholder="Ej. Visita operativa Toluca">
-            </div>
+          <div class="grid-3" style="margin-top:10px;">
+            <div class="field"><label>Desde</label><input type="date" id="periodo-desde" onchange="actualizarLimitesCalendario()"></div>
+            <div class="field"><label>Hasta</label><input type="date" id="periodo-hasta" onchange="actualizarLimitesCalendario()"></div>
+            <div class="field"><label>Motivo</label><input type="text" id="motivo" placeholder="Ej. Visita operativa Toluca"></div>
           </div>
         </div>
 
@@ -255,10 +269,19 @@ table.reportes tr:hover{background:var(--gray-050);}
               <tbody id="items-tbody"></tbody>
             </table>
           </div>
-          <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center;">
-            <button class="btn btn-outline btn-sm" onclick="addItemRow()">+ Agregar línea de gasto</button>
-            <div style="font-family:monospace; font-size:18px; font-weight:700;">Total Gastos: <span id="total-val">$0.00</span></div>
+          
+          <!-- REQUERIMIENTO 2: Bloque final con restas y etiquetas dinámicas condicionadas -->
+          <div style="margin-top:15px; border-top:2px dashed var(--gray-200); padding-top:12px; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+            <div style="font-family:monospace; font-size:14px; color:var(--gray-700);">Total Gastos Reportados: <span id="total-val">$0.00</span></div>
+            <div style="font-family:monospace; font-size:16px; font-weight:700; color:var(--navy-900);" id="diferencia-viaticos-block">Saldo a devolver: $0.00</div>
           </div>
+
+          <!-- REQUERIMIENTO 5: Diálogo de rechazo en Reporte de Gastos -->
+          <div id="rechazo-reporte-container" class="rechazo-box hidden">
+            <h4>Motivo de Rechazo Administrativo:</h4>
+            <p id="rechazo-reporte-texto"></p>
+          </div>
+
           <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
             <button class="btn btn-outline hidden" id="cancel-edit-btn" onclick="cancelEdit()">Cancelar Edición</button>
             <button class="btn btn-gold" id="submit-btn" onclick="submitReporte()">Enviar Reporte a Revisión</button>
@@ -272,7 +295,7 @@ table.reportes tr:hover{background:var(--gray-050);}
           <h2>Bandeja de Reportes de Gastos</h2>
           
           <div id="search-block-gastos" class="search-box-container hidden">
-            <input type="text" id="search-input-gastos" class="search-input" placeholder="🔍 Búsqueda inteligente (Digita folio, colaborador o motivo y presiona Buscar)...">
+            <input type="text" id="search-input-gastos" class="search-input" placeholder="🔍 Búsqueda inteligente (Digita folio, colaborador o motivo)...">
             <button class="btn btn-primary btn-sm" onclick="ejecutarFiltrosReportes()">Buscar</button>
           </div>
 
@@ -296,7 +319,7 @@ table.reportes tr:hover{background:var(--gray-050);}
           <h2>Bandeja de Solicitudes de Viáticos</h2>
 
           <div id="search-block-viaticos" class="search-box-container hidden">
-            <input type="text" id="search-input-viaticos" class="search-input" placeholder="🔍 Búsqueda inteligente (Digita solicitud, colaborador o caja destino y presiona Buscar)...">
+            <input type="text" id="search-input-viaticos" class="search-input" placeholder="🔍 Búsqueda inteligente (Digita solicitud, colaborador o caja destino)...">
             <button class="btn btn-primary btn-sm" onclick="ejecutarFiltrosViaticos()">Buscar</button>
           </div>
 
@@ -318,9 +341,8 @@ table.reportes tr:hover{background:var(--gray-050);}
       </section>
     </main>
     
-    <!-- Pie de página dinámico para las pantallas del sistema interno -->
     <div class="main-footer">
-      <div>MCM Móduo de Viaticos — Todos los derechos reservados</div>
+      <div>MCM Suite Operativa — Todos los derechos reservados</div>
       <div id="main-footer-version">Cargando versión...</div>
     </div>
   </div>
@@ -330,7 +352,7 @@ table.reportes tr:hover{background:var(--gray-050);}
 <div id="detalle-modal" class="modal-overlay hidden" style="position:fixed; inset:0; background:rgba(11,37,69,0.55); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px;">
   <div class="split-modal-box">
     <div style="display:flex; justify-content:between; align-items:center; border-bottom:1px solid var(--gray-200); padding-bottom:10px;">
-      <h3 id="detalle-titulo" style="margin:0; font-family:'Libre Franklin'; color:var(--navy-900);">Revisión Contable Colectiva</h3>
+      <h3 id="detalle-titulo">Auditoría General</h3>
       <button class="btn btn-outline btn-sm" onclick="closeModal()" style="margin-left:auto;">Cerrar Panel ×</button>
     </div>
     
@@ -341,6 +363,12 @@ table.reportes tr:hover{background:var(--gray-050);}
           <tbody id="detalle-tbody"></tbody>
         </table>
         
+        <!-- REQUERIMIENTO 6: Cuadro visual para perfiles AUD -->
+        <div id="aud-rechazo-view-block" class="rechazo-box hidden" style="margin-top:15px; background:var(--gray-050); border-left-color:var(--gray-500);">
+          <h4 style="color:var(--gray-700);">Historial de Observaciones / Rechazo:</h4>
+          <p id="aud-rechazo-texto" style="color:var(--navy-900); font-weight:600;"></p>
+        </div>
+
         <div id="admin-actions-block" class="hidden" style="margin-top:20px; border-top:2px solid var(--gray-200); padding-top:15px;">
           <textarea id="admin-comment" rows="2" style="width:100%; border-radius:6px; padding:8px; border:1px solid var(--gray-200); margin-bottom:10px;" placeholder="Observaciones de dictaminación obligatorias..."></textarea>
           <div style="display:flex; gap:10px; justify-content:flex-end;">
@@ -359,128 +387,115 @@ table.reportes tr:hover{background:var(--gray-050);}
   <div class="card" style="width:450px;">
     <h3>Dictaminar Anticipo de Viáticos</h3>
     <p id="v-modal-info" style="font-size:13px; color:var(--gray-700);"></p>
-    <textarea id="v-admin-comment" rows="2" style="width:100%; margin-bottom:12px; padding:8px; border-radius:6px; border:1px solid var(--gray-200);" placeholder="Comentarios opcionales..."></textarea>
-    <div style="display:flex; justify-content:flex-end; gap:8px;">
-      <button class="btn btn-outline btn-sm" onclick="closeViaticoModal()">Cancelar</button>
-      <button class="btn btn-danger btn-sm" onclick="dictaminarViatico('RECHAZADO')">Rechazar</button>
-      <button class="btn btn-gold btn-sm" onclick="dictaminarViatico('AUTORIZADO')">Autorizar</button>
+    
+    <!-- REQUERIMIENTO 6: Bloque visible para auditores en viáticos -->
+    <div id="aud-v-rechazo-block" class="rechazo-box hidden" style="margin-bottom:10px; background:var(--gray-050); border-left-color:var(--gray-400);">
+      <h4 style="color:var(--gray-700);">Nota de Auditoría / Rechazo anterior:</h4>
+      <p id="aud-v-rechazo-texto"></p>
+    </div>
+
+    <div id="admin-v-actions-block">
+      <textarea id="v-admin-comment" rows="2" style="width:100%; margin-bottom:12px; padding:8px; border-radius:6px; border:1px solid var(--gray-200);" placeholder="Comentarios opcionales..."></textarea>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="closeViaticoModal()">Cancelar</button>
+        <button class="btn btn-danger btn-sm" onclick="dictaminarViatico('RECHAZADO')">Rechazar</button>
+        <button class="btn btn-gold btn-sm" onclick="dictaminarViatico('AUTORIZADO')">Autorizar</button>
+      </div>
     </div>
   </div>
 </div>
 
 <div id="toast" class="toast"></div>
-<div id="loading" class="loading-overlay hidden">
-  <div class="spinner-clock"></div>
-  <h2>Procesando Información...</h2>
-</div>
+<div id="loading" class="loading-overlay hidden"><div class="spinner-clock"></div><h2>Procesando Información...</h2></div>
 
 <script>
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxWoY3fQyFECSCATy_nRHVmf_exJ-NHzstJcapmor10YHhwHSFscP1UdPuByyP2uWpc/exec"
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxSku5xW1h7_fI7jjB4ywcaYLJaSPJ4hI_H88JkPXsYR5O0gJSlhqGKjYwt5FVE_Jkr/exec"
 };
 
 function formatFechaAmigable(fechaStr) {
   if (!fechaStr || String(fechaStr).trim() === "") return "—";
-  
   let limpia = String(fechaStr).trim();
-  
-  // 1. SI VIENE EN FORMATO TEXTO LARGO DE GOOGLE (Ej: "Mon Jul 13 2026 01:00:00...")
   if (limpia.includes(' ') && !limpia.includes('-')) {
     try {
       const d = new Date(fechaStr);
       if (!isNaN(d.getTime())) {
-        // Formatear manualmente a DD/Mes/AAAA usando la configuración regional del navegador
         const dia = String(d.getDate()).padStart(2, '0');
         const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-        const mes = meses[d.getMonth()];
-        const anio = d.getFullYear();
-        return `${dia}/${mes}/${anio}`;
+        return `${dia}/${meses[d.getMonth()]}/${d.getFullYear()}`;
       }
     } catch(e) {}
-    
-    // Fallback secundario si falla el objeto Date: intentar parsear el texto por partes
-    const partesTexto = limpia.split(' ');
-    if (partesTexto.length >= 4) {
-      // El formato suele ser: [0]=Mon, [1]=Jul, [2]=13, [3]=2026
-      const mesTraducido = partesTexto[1].substring(0, 3);
-      return `${partesTexto[2].padStart(2, '0')}/${mesTraducido}/${partesTexto[3]}`;
-    }
   }
-
-  // 2. SI VIENE EN FORMATO ESTÁNDAR ISO CON TIEMPO (Ej: "2026-07-13T13:00:00")
-  if (limpia.includes('T')) {
-    limpia = limpia.split('T')[0];
-  }
-
-  // 3. PROCESAR FORMATO CORTO ESTÁNDAR (Ej: "2026-07-13")
+  if (limpia.includes('T')) limpia = limpia.split('T')[0];
   const partes = limpia.split('-'); 
   if (partes.length === 3) {
     const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-    try {
-      const mesIdx = parseInt(partes[1], 10) - 1;
-      if (mesIdx >= 0 && mesIdx < 12) { 
-        return `${partes[2].padStart(2, '0')}/${meses[mesIdx]}/${partes[0]}`; 
-      }
-    } catch(e) {}
+    return `${partes[2].padStart(2, '0')}/${meses[parseInt(partes[1],10)-1]}/${partes[0]}`;
   }
-  
-  return limpia; // Si no entra en ninguna regla, devuelve el texto original sin romper nada
+  return limpia;
 }
   
-let SESSION = null;
-let BOOTSTRAP = null;
-let ITEMS = [];
-let rowSeq = 0;
-let editingId = null;
-let currentActiveReporteId = null;
-let currentActiveViaticoId = null;
-window.pdfGlobalBase64String = "";
-
-let CACHE_REPORTES = [];
-let CACHE_VIATICOS = [];
+let SESSION = null; let BOOTSTRAP = null; let ITEMS = []; let rowSeq = 0; let editingId = null;
+let currentActiveReporteId = null; let currentActiveViaticoId = null; window.pdfGlobalBase64String = "";
+let CACHE_REPORTES = []; let CACHE_VIATICOS = [];
 
 async function api(action, payload) {
   showLoading(true);
   try {
     const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action, payload })
+      method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action, payload })
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || "Excepción en servidor");
     return data;
-  } finally {
-    showLoading(false);
-  }
+  } finally { showLoading(false); }
 }
 
 function showLoading(v) { document.getElementById('loading').classList.toggle('hidden', !v); }
 function showToast(msg, isError) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
+  const t = document.getElementById('toast'); t.textContent = msg;
   t.className = 'toast show' + (isError ? ' error' : '');
   setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// REQUERIMIENTO 3: Función especializada de impresión ajustada a hoja carta
+function imprimirPantalla(sectionId) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('print-active'));
+  document.getElementById(sectionId).classList.add('print-active');
+  window.print();
+}
+
+// REQUERIMIENTO 2: Lógica matemática con condicionales para Saldo a Devolver / Saldo a Favor
+function calcularDiferenciaViaticos() {
+  const asignado = parseFloat(document.getElementById('monto-asignado-input').value) || 0;
+  const gastado = ITEMS.reduce((s, it) => s + (parseFloat(it.monto) || 0), 0);
+  const diferencia = asignado - gastado;
+  
+  const block = document.getElementById('diferencia-viaticos-block');
+  if (diferencia >= 0) {
+    block.style.color = "var(--green-700)";
+    block.textContent = `Saldo a devolver: $${diferencia.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+  } else {
+    block.style.color = "var(--red-700)";
+    block.textContent = `Saldo a Favor: $${Math.abs(diferencia).toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+  }
 }
 
 async function doLogin() {
   const usuario = document.getElementById('login-usuario').value.trim();
   const password = document.getElementById('login-password').value;
-  const errBox = document.getElementById('login-error');
-  errBox.classList.remove('show');
-  
+  const errBox = document.getElementById('login-error'); errBox.classList.remove('show');
   if (!usuario || !password) { errBox.textContent = "Campos requeridos."; errBox.classList.add('show'); return; }
   try {
     const data = await api('login', { usuario, password });
     SESSION = {
-      usuario: data.usuario,
-      rol: String(data.rol).trim().toUpperCase(),
+      usuario: data.usuario, rol: String(data.rol).trim().toUpperCase(),
       clave_empleado: data.clave_empleado ? String(data.clave_empleado).trim().toUpperCase() : "",
       permisos: data.permisos || { revisa_gastos: false, revisa_viaticos: false }
     };
     sessionStorage.setItem('mcm_session_v2', JSON.stringify(SESSION));
     await runApplication();
-  } catch (e) { errBox.textContent = e.message || "Error."; errBox.classList.add('show'); }
+  } catch (e) { errBox.textContent = e.message; errBox.classList.add('show'); }
 }
 
 function logout() {
@@ -497,7 +512,6 @@ async function runApplication() {
 
   BOOTSTRAP = await api('bootstrap', { clave_empleado: SESSION.clave_empleado });
   
-  // Sincronizar versión y fecha de publicación dinámicas leídas de Sheets CONFIG
   const metaText = `Versión: ${BOOTSTRAP.version_sistema || 'v2.1.0'} | Publicación: ${formatFechaAmigable(BOOTSTRAP.fecha_publicacion) || '13/Jul/2026'}`;
   document.getElementById('login-footer-text').textContent = metaText;
   document.getElementById('main-footer-version').textContent = metaText;
@@ -520,26 +534,22 @@ async function runApplication() {
     document.getElementById('tab-btn-nuevo').classList.remove('hidden');
     document.getElementById('tab-btn-solicitud').classList.remove('hidden');
     document.getElementById('tab-btn-reportes').textContent = (!SESSION.permisos.revisa_gastos && !SESSION.permisos.revisa_viaticos) ? "Mis Solicitudes / Historial" : "Bandeja Reportes / Historial";
-    fillEmpleadoCard();
+    
+    // Inyectar datos duplicados en ambos encabezados
+    document.querySelectorAll('.emp-nro-val').forEach(el => el.textContent = BOOTSTRAP.empleado.nro_empleado || '—');
+    document.querySelectorAll('.emp-nombre-val').forEach(el => el.textContent = BOOTSTRAP.empleado.nombre || '—');
+    document.querySelectorAll('.emp-puesto-val').forEach(el => el.textContent = BOOTSTRAP.empleado.puesto || '—');
+    document.querySelectorAll('.emp-cc-val').forEach(el => el.textContent = BOOTSTRAP.empleado.centro_costo || '—');
+
     ITEMS = []; editingId = null; window.pdfGlobalBase64String = "";
     document.getElementById('global-pdf-name').textContent = "Sin archivo cargado";
-    document.getElementById('global-clip-btn').className = "clip-btn";
     addItemRow();
     switchTab('solicitud'); 
   } else {
     document.getElementById('tab-btn-nuevo').classList.add('hidden');
     document.getElementById('tab-btn-solicitud').classList.add('hidden');
-    document.getElementById('tab-btn-reportes').textContent = "Bandeja Reportes / Historial";
     switchTab('reportes');
   }
-}
-
-function fillEmpleadoCard() {
-  const e = BOOTSTRAP.empleado;
-  document.getElementById('emp-nro').textContent = e.nro_empleado || '—';
-  document.getElementById('emp-nombre').textContent = e.nombre || '—';
-  document.getElementById('emp-puesto').textContent = e.puesto || '—';
-  document.getElementById('emp-cc').textContent = e.centro_costo || '—';
 }
 
 function switchTab(tab) {
@@ -562,80 +572,42 @@ function addItemRow() {
 function removeItemRow(id) { ITEMS = ITEMS.filter(it => it.id !== id); renderItemsTable(); }
 
 function updateItem(id, field, value) {
-  const it = ITEMS.find(i => i.id === id);
-  if (!it) return;
+  const it = ITEMS.find(i => i.id === id); if (!it) return;
   it[field] = value;
-  if (field === 'categoria') {
-    it.concepto = '';
-    renderItemsTable();
-  } else {
-    computeTotal();
-  }
+  if (field === 'categoria') { it.concepto = ''; renderItemsTable(); } 
+  else { computeTotal(); }
 }
 
-function actualizarLimitesCalendario() {
-  if (!BOOTSTRAP) return;
-  renderItemsTable();
-}
+function actualizarLimitesCalendario() { if (!BOOTSTRAP) return; renderItemsTable(); }
 
 function processGlobalFile(inputElement) {
-  const file = inputElement.files[0];
-  if (!file) return;
-  
-  if (file.type !== "application/pdf") { 
-    showToast("Permitido solo formato PDF nativo.", true); 
-    inputElement.value = ''; 
-    return; 
-  }
-  
-  if (file.size > (BOOTSTRAP.limite_pdf_mb * 1024 * 1024)) { 
-    showToast(`Excede el límite de ${BOOTSTRAP.limite_pdf_mb} MB.`, true); 
-    inputElement.value = ''; 
-    return; 
-  }
-
+  const file = inputElement.files[0]; if (!file) return;
+  if (file.type !== "application/pdf") { showToast("Permitido solo formato PDF nativo.", true); inputElement.value = ''; return; }
+  if (file.size > (BOOTSTRAP.limite_pdf_mb * 1024 * 1024)) { showToast(`Excede el límite de ${BOOTSTRAP.limite_pdf_mb} MB.`, true); inputElement.value = ''; return; }
   const reader = new FileReader();
   reader.onload = function(e) {
     window.pdfGlobalBase64String = e.target.result;
     document.getElementById('global-pdf-name').textContent = `📎 ${file.name} listo para envío`;
     document.getElementById('global-clip-btn').className = "clip-btn loaded";
-    showToast("PDF Global indexado con éxito.");
   };
   reader.readAsDataURL(file);
 }
 
 function renderItemsTable() {
-  const tbody = document.getElementById('items-tbody');
-  tbody.innerHTML = '';
-  
-  if (!BOOTSTRAP) return;
-
+  const tbody = document.getElementById('items-tbody'); tbody.innerHTML = ''; if (!BOOTSTRAP) return;
   const desdeVal = document.getElementById('periodo-desde').value;
   const hastaVal = document.getElementById('periodo-hasta').value;
 
   ITEMS.forEach(it => {
     const tr = document.createElement('tr');
-    
-    const catOptions = (BOOTSTRAP.categorias || []).map(c => 
-      `<option value="${c.categoria}" ${it.categoria === c.categoria ? 'selected' : ''}>${c.categoria}</option>`
-    ).join('');
-    
-    const compOptions = (BOOTSTRAP.comprobantes || []).map(c => 
-      `<option value="${c}" ${it.comprobante === c ? 'selected' : ''}>${c}</option>`
-    ).join('');
-    
+    const catOptions = (BOOTSTRAP.categorias || []).map(c => `<option value="${c.categoria}" ${it.categoria === c.categoria ? 'selected' : ''}>${c.categoria}</option>`).join('');
+    const compOptions = (BOOTSTRAP.comprobantes || []).map(c => `<option value="${c}" ${it.comprobante === c ? 'selected' : ''}>${c}</option>`).join('');
     let conceptosFiltro = [];
     if (it.categoria === 'VIATICOS') conceptosFiltro = BOOTSTRAP.conceptos.VIATICOS || [];
     else if (it.categoria === 'CAJA CHICA') conceptosFiltro = BOOTSTRAP.conceptos['CAJA CHICA'] || [];
     else if (it.categoria === 'ACTIVIDAD') conceptosFiltro = BOOTSTRAP.conceptos.ACTIVIDAD || [];
-    
-    const concOptions = conceptosFiltro.map(c => 
-      `<option value="${c}" ${it.concepto === c ? 'selected' : ''}>${c}</option>`
-    ).join('');
-
-    const agenciaOptions = (BOOTSTRAP.agencias || []).map(a => 
-      `<option value="${a}" ${it.agencia_area === a ? 'selected' : ''}>${a}</option>`
-    ).join('');
+    const concOptions = conceptosFiltro.map(c => `<option value="${c}" ${it.concepto === c ? 'selected' : ''}>${c}</option>`).join('');
+    const agenciaOptions = (BOOTSTRAP.agencias || []).map(a => `<option value="${a}" ${it.agencia_area === a ? 'selected' : ''}>${a}</option>`).join('');
 
     tr.innerHTML = `
       <td><input type="date" value="${it.fecha || ''}" min="${desdeVal}" max="${hastaVal}" onchange="updateItem('${it.id}','fecha',this.value)"></td>
@@ -646,7 +618,7 @@ function renderItemsTable() {
       <td><input type="text" value="${it.justificacion || ''}" placeholder="Opcional..." onchange="updateItem('${it.id}','justificacion',this.value)"></td>
       <td><select onchange="updateItem('${it.id}','agencia_area',this.value)"><option value="">Seleccionar área...</option>${agenciaOptions}</select></td>
       <td><input type="number" step="0.01" value="${it.monto || ''}" placeholder="0.00" style="text-align:right;" onchange="updateItem('${it.id}','monto',this.value)"></td>
-      <td><button style="background:none; border:none; color:var(--red-700); font-weight:bold; cursor:pointer;" onclick="removeItemRow('${it.id}')">×</button></td>
+      <td><button style="background:none; border:none; color:var(--red-700); font-weight:bold;" onclick="removeItemRow('${it.id}')">×</button></td>
     `;
     tbody.appendChild(tr);
   });
@@ -654,62 +626,32 @@ function renderItemsTable() {
 }
 
 function computeTotal() {
-  const total = ITEMS.reduce((s, it) => {
-    const m = parseFloat(it.monto);
-    return s + (isNaN(m) ? 0 : m);
-  }, 0);
+  const total = ITEMS.reduce((s, it) => s + (parseFloat(it.monto) || 0), 0);
   document.getElementById('total-val').textContent = '$' + total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  calcularDiferenciaViaticos();
 }
 
 async function submitReporte() {
   const desde = document.getElementById('periodo-desde').value;
   const hasta = document.getElementById('periodo-hasta').value;
   const motivo = document.getElementById('motivo').value.trim();
-  
   const archivoAdjunto = window.pdfGlobalBase64String || "";
 
-  if (!desde || !hasta || !motivo) return showToast("Por favor complementa el periodo (Desde / Hasta) y el motivo del reporte.", true);
+  if (!desde || !hasta || !motivo) return showToast("Por favor complementa el periodo y el motivo.", true);
   if (ITEMS.length === 0) return showToast("Debe agregar al menos una línea de gasto.", true);
-  if (!archivoAdjunto && !editingId) return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
-
-  for (let i = 0; i < ITEMS.length; i++) {
-    const it = ITEMS[i];
-    const n = i + 1;
-    if (!it.fecha) return showToast(`Fila ${n}: La fecha del gasto es obligatoria.`, true);
-    if (!it.categoria) return showToast(`Fila ${n}: Debe seleccionar una categoría.`, true);
-    if (!it.comprobante) return showToast(`Fila ${n}: Debe seleccionar un tipo de comprobante.`, true);
-    if (!it.concepto) return showToast(`Fila ${n}: Debe seleccionar un concepto.`, true);
-    if (!it.descripcion || !it.descripcion.trim()) return showToast(`Fila ${n}: La descripción del gasto es obligatoria.`, true);
-    if (!it.agencia_area) return showToast(`Fila ${n}: Debe seleccionar una Agencia / Área del catálogo.`, true);
-    const montoNum = parseFloat(it.monto);
-    if (isNaN(montoNum) || montoNum <= 0) return showToast(`Fila ${n}: El monto debe ser un número válido y mayor a cero.`, true);
-    if (it.fecha < desde || it.fecha > hasta) return showToast(`Fila ${n}: La fecha está fuera del periodo declarado (${formatFechaAmigable(desde)} al ${formatFechaAmigable(hasta)}).`, true);
-  }
+  if (!archivoAdjunto && !editingId) return showToast("Es obligatorio cargar el PDF único.", true);
 
   const payload = {
-    clave_empleado: BOOTSTRAP.empleado.clave, 
-    nombre_empleado: BOOTSTRAP.empleado.nombre,
-    puesto: BOOTSTRAP.empleado.puesto, 
-    area: BOOTSTRAP.empleado.sucursal_area,
-    centro_costo: BOOTSTRAP.empleado.centro_costo, 
-    periodo_desde: desde, 
-    periodo_hasta: hasta,
-    motivo: motivo, 
-    items: ITEMS, 
-    pdfGlobalBase64: archivoAdjunto
+    clave_empleado: BOOTSTRAP.empleado.clave, nombre_empleado: BOOTSTRAP.empleado.nombre,
+    puesto: BOOTSTRAP.empleado.puesto, area: BOOTSTRAP.empleado.sucursal_area,
+    centro_costo: BOOTSTRAP.empleado.centro_costo, periodo_desde: desde, periodo_hasta: hasta,
+    motivo: motivo, items: ITEMS, pdfGlobalBase64: archivoAdjunto
   };
 
   try {
-    if (editingId) {
-      payload.id_reporte = editingId;
-      await api('updateReporte', payload);
-      showToast("Reporte corregido y reenviado.");
-    } else {
-      await api('submitReporte', payload);
-      showToast("Reporte unificado enviado con éxito.");
-    }
-    cancelEdit();
-    switchTab('reportes');
+    if (editingId) { payload.id_reporte = editingId; await api('updateReporte', payload); showToast("Reporte reenviado."); } 
+    else { await api('submitReporte', payload); showToast("Reporte enviado con éxito."); }
+    cancelEdit(); switchTab('reportes');
   } catch (e) { showToast(e.message, true); }
 }
 
@@ -721,7 +663,7 @@ async function submitSolicitudViaticos() {
   const monto = parseFloat(document.getElementById('sv-monto').value);
   const caja = document.getElementById('sv-caja').value;
 
-  if(!desde || !hasta || !jefe || !motivo || !monto || !caja) return showToast("Completa todos los campos obligatorios.", true);
+  if(!desde || !hasta || !jefe || !motivo || !monto || !caja) return showToast("Completa todos los campos.", true);
   localStorage.setItem('mcm_jefe_' + SESSION.clave_empleado, jefe);
 
   try {
@@ -738,32 +680,37 @@ async function submitSolicitudViaticos() {
 }
 
 function cancelEdit() {
-  editingId = null; 
-  window.pdfGlobalBase64String = "";
+  editingId = null; window.pdfGlobalBase64String = "";
   document.getElementById('submit-btn').textContent = 'Enviar Reporte a Revisión';
   document.getElementById('cancel-edit-btn').classList.add('hidden');
-  document.getElementById('motivo').value = ''; 
-  document.getElementById('periodo-desde').value = ''; 
-  document.getElementById('periodo-hasta').value = '';
+  document.getElementById('motivo').value = ''; document.getElementById('periodo-desde').value = ''; document.getElementById('periodo-hasta').value = '';
   document.getElementById('global-pdf-name').textContent = "Sin archivo cargado";
-  document.getElementById('global-clip-btn').className = "clip-btn";
-  
-  const fileInput = document.getElementById('global-pdf-file');
-  if(fileInput) fileInput.value = "";
-  
-  ITEMS = []; 
-  addItemRow();
+  document.getElementById('monto-asignado-input').value = '';
+  document.getElementById('rechazo-reporte-container').classList.add('hidden');
+  ITEMS = []; addItemRow();
 }
 
 async function loadReportesYViaticos() {
   try {
     const repData = await api('listReportes', { rol: SESSION.rol, clave_empleado: SESSION.clave_empleado });
-    CACHE_REPORTES = repData.reportes || [];
-    ejecutarFiltrosReportes();
+    CACHE_REPORTES = repData.reportes || []; ejecutarFiltrosReportes();
 
     const viaData = await api('listViaticos', { rol: SESSION.rol, clave_empleado: SESSION.clave_empleado });
-    CACHE_VIATICOS = viaData.solicitudes || [];
-    ejecutarFiltrosViaticos();
+    CACHE_VIATICOS = viaData.solicitudes || []; ejecutarFiltrosViaticos();
+    
+    // REQUERIMIENTO 5: Buscar si el usuario actual tiene reportes RECHAZADOS para desplegarles el mensaje
+    const miUltimoRechazoG = CACHE_REPORTES.find(r => r.estatus === 'RECHAZADO' && r.clave_empleado === SESSION.clave_empleado);
+    if(miUltimoRechazoG && miUltimoRechazoG.comentario_autorizacion) {
+      document.getElementById('rechazo-reporte-texto').textContent = miUltimoRechazoG.comentario_autorizacion;
+      document.getElementById('rechazo-reporte-container').classList.remove('hidden');
+    }
+
+    const miUltimoRechazoV = CACHE_VIATICOS.find(v => v.estatus === 'RECHAZADO' && v.clave_empleado === SESSION.clave_empleado);
+    if(miUltimoRechazoV && miUltimoRechazoV.comentario_autorizacion) {
+      document.getElementById('rechazo-viatico-texto').textContent = miUltimoRechazoV.comentario_autorizacion;
+      document.getElementById('rechazo-viatico-container').classList.remove('hidden');
+    }
+
   } catch (e) { showToast("Error al cargar bandejas.", true); }
 }
 
@@ -774,29 +721,19 @@ function ejecutarFiltrosReportes() {
   const fMotivo = document.getElementById('f-gastos-motivo').value.trim().toLowerCase();
   const fEstatus = document.getElementById('f-gastos-estatus').value;
 
-  const datosFiltrados = CACHE_REPORTES.filter(r => {
-    if (qGlobal) {
-      const matchGlobal = 
-        String(r.id_reporte).toLowerCase().includes(qGlobal) ||
-        String(r.nombre_empleado).toLowerCase().includes(qGlobal) ||
-        String(r.motivo).toLowerCase().includes(qGlobal);
-      if (!matchGlobal) return false;
-    }
+  const filtered = CACHE_REPORTES.filter(r => {
+    if (qGlobal && !(String(r.id_reporte).toLowerCase().includes(qGlobal) || String(r.nombre_empleado).toLowerCase().includes(qGlobal))) return false;
     if (fId && !String(r.id_reporte).toLowerCase().includes(fId)) return false;
     if (fNombre && !String(r.nombre_empleado).toLowerCase().includes(fNombre)) return false;
     if (fMotivo && !String(r.motivo).toLowerCase().includes(fMotivo)) return false;
     if (fEstatus && String(r.estatus) !== fEstatus) return false;
-    
     return true;
   });
-
-  renderTablaGastos(datosFiltrados);
+  renderTablaGastos(filtered);
 }
 
 function renderTablaGastos(lista) {
-  const tbodyR = document.getElementById('reportes-tbody'); 
-  tbodyR.innerHTML = '';
-  
+  const tbodyR = document.getElementById('reportes-tbody'); tbodyR.innerHTML = '';
   lista.forEach(r => {
     const puedeDictaminar = (SESSION.rol === 'ADM_FULL' || SESSION.rol === 'ADM_GAST') && r.estatus === 'ENVIADO';
     const tr = document.createElement('tr');
@@ -806,8 +743,8 @@ function renderTablaGastos(lista) {
       <td>${r.motivo}</td><td>$${Number(r.total_gastos).toLocaleString('es-MX')}</td>
       <td><span class="estatus-pill estatus-${r.estatus}">${r.estatus}</span></td>
       <td>
-        <button class="btn btn-outline btn-sm" onclick="openReporteDetalle('${r.id_reporte}', ${puedeDictaminar})">Revisar</button>
-        ${r.estatus === 'RECHAZADO' && r.clave_empleado === SESSION.clave_empleado ? `<button class="btn btn-gold btn-sm" onclick="editRechazado('${r.id_reporte}')">Corregir</button>` : ''}
+        <button class="btn btn-outline btn-sm" onclick="openReporteDetalle('${r.id_reporte}', ${puedeDictaminar}, '${r.comentario_autorizacion || ''}')">Revisar</button>
+        ${r.estatus === 'RECHAZADO' && r.clave_empleado === SESSION.clave_empleado ? `<button class="btn btn-gold btn-sm" onclick="editRechazado('${r.id_reporte}', '${r.comentario_autorizacion || ''}')">Corregir</button>` : ''}
       </td>
     `;
     tbodyR.appendChild(tr);
@@ -821,107 +758,107 @@ function ejecutarFiltrosViaticos() {
   const fCaja = document.getElementById('f-viat-caja').value.trim().toLowerCase();
   const fEstatus = document.getElementById('f-viat-estatus').value;
 
-  const datosFiltrados = CACHE_VIATICOS.filter(v => {
-    if (qGlobal) {
-      const matchGlobal = 
-        String(v.id_solicitud).toLowerCase().includes(qGlobal) ||
-        String(v.nombre_empleado).toLowerCase().includes(qGlobal) ||
-        String(v.caja_entrega).toLowerCase().includes(qGlobal);
-      if (!matchGlobal) return false;
-    }
+  const filtered = CACHE_VIATICOS.filter(v => {
+    if (qGlobal && !(String(v.id_solicitud).toLowerCase().includes(qGlobal) || String(v.nombre_empleado).toLowerCase().includes(qGlobal))) return false;
     if (fId && !String(v.id_solicitud).toLowerCase().includes(fId)) return false;
     if (fNombre && !String(v.nombre_empleado).toLowerCase().includes(fNombre)) return false;
     if (fCaja && !String(v.caja_entrega).toLowerCase().includes(fCaja)) return false;
     if (fEstatus && String(v.estatus) !== fEstatus) return false;
-    
     return true;
   });
-
-  renderTablaViaticos(datosFiltrados);
+  renderTablaViaticos(filtered);
 }
 
 function renderTablaViaticos(lista) {
-  const tbodyV = document.getElementById('viaticos-tbody'); 
-  tbodyV.innerHTML = '';
-  
+  const tbodyV = document.getElementById('viaticos-tbody'); tbodyV.innerHTML = '';
   lista.forEach(v => {
-    const puedeDictaminarV = (SESSION.rol === 'ADM_FULL' || SESSION.rol === 'ADM_VIAT') && v.estatus === 'ENVIADO';
     const tr = document.createElement('tr');
+    // REQUERIMIENTO 6: Habilitar dictaminación o visualización a perfiles AUD
+    const puedeDictaminarV = (SESSION.rol === 'ADM_FULL' || SESSION.rol === 'ADM_VIAT') && v.estatus === 'ENVIADO';
+    const esAuditor = String(SESSION.rol).includes('AUD') || puedeDictaminarV;
+    
     tr.innerHTML = `
       <td><b>${v.id_solicitud}</b></td><td>${v.nombre_empleado}</td><td>${formatFechaAmigable(v.periodo_desde)} al ${formatFechaAmigable(v.periodo_hasta)}</td>
       <td>$${Number(v.monto_solicitado).toLocaleString('es-MX')}</td><td>${v.caja_entrega}</td><td><span class="estatus-pill estatus-${v.estatus}">${v.estatus}</span></td>
-      <td>${puedeDictaminarV ? `<button class="btn btn-gold btn-sm" onclick="openViaticoModal('${v.id_solicitud}','${v.nombre_empleado}','${v.monto_solicitado}')">Dictaminar</button>` : '—'}</td>
+      <td>${esAuditor ? `<button class="btn btn-gold btn-sm" onclick="openViaticoModal('${v.id_solicitud}','${v.nombre_empleado}','${v.monto_solicitado}', '${v.comentario_autorizacion || ''}', ${puedeDictaminarV})">Revisar</button>` : '—'}</td>
     `;
     tbodyV.appendChild(tr);
   });
 }
 
-async function openReporteDetalle(idReporte, puedeDictaminar) {
+async function openReporteDetalle(idReporte, puedeDictaminar, comentarioRechazo) {
   currentActiveReporteId = idReporte;
   document.getElementById('admin-comment').value = ''; 
   document.getElementById('detalle-titulo').textContent = `Auditoría General - Folio: ${idReporte}`;
+  
   if(puedeDictaminar) document.getElementById('admin-actions-block').classList.remove('hidden');
   else document.getElementById('admin-actions-block').classList.add('hidden');
 
+  // REQUERIMIENTO 6: Mostrar diálogos de rechazo a perfiles AUD/ADM
+  const blockAud = document.getElementById('aud-rechazo-view-block');
+  if(comentarioRechazo && comentarioRechazo !== 'undefined' && comentarioRechazo.trim() !== '') {
+    document.getElementById('aud-rechazo-texto').textContent = comentarioRechazo;
+    blockAud.classList.remove('hidden');
+  } else { blockAud.classList.add('hidden'); }
+
   try {
     const res = await api('getReporteDetalle', { id_reporte: idReporte });
-    const tbody = document.getElementById('detalle-tbody');
-    tbody.innerHTML = '';
-
+    const tbody = document.getElementById('detalle-tbody'); tbody.innerHTML = '';
     res.registros.forEach(reg => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><b>${reg.categoria || '—'}</b></td>
-        <td>${reg.concepto || '—'}</td>
-        <td>${reg.descripcion || '—'}</td>
-        <td>${reg.justificacion || '—'}</td>
-        <td>${reg.agencia_area || '—'}</td>
-        <td style="text-align:right;">$${Number(reg.monto || 0).toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-      `;
+      tr.innerHTML = `<td><b>${reg.categoria}</b></td><td>${reg.concepto}</td><td>${reg.descripcion}</td><td>${reg.justificacion || '—'}</td><td>${reg.agencia_area || '—'}</td><td style="text-align:right;">$${Number(reg.monto).toLocaleString('es-MX', {minimumFractionDigits:2})}</td>`;
       tbody.appendChild(tr);
     });
-
     const pane = document.getElementById('pdf-viewer-pane');
     if (res.url_pdf_global) {
       const fileId = res.url_pdf_global.match(/id=([^&]+)/) || res.url_pdf_global.match(/\/file\/d\/([^/]+)/);
       if(fileId) { pane.innerHTML = `<iframe src="https://drive.google.com/file/d/${fileId[1]}/preview" class="pdf-iframe" allow="autoplay"></iframe>`; }
-      else { pane.innerHTML = `<span style="color:var(--red-700); padding:20px;">Error en el enlace del documento.</span>`; }
-    } else {
-      pane.innerHTML = `<span style="color:var(--gray-500); padding:20px; font-family:monospace; text-align:center;">Sin archivo PDF unificado.</span>`;
-    }
+    } else { pane.innerHTML = `<span style="color:var(--gray-500); padding:20px; font-family:monospace;">Sin PDF global.</span>`; }
     document.getElementById('detalle-modal').classList.remove('hidden');
-  } catch(e) { showToast("Error al recuperar los conceptos del folio.", true); }
+  } catch(e) { showToast("Error al recuperar conceptos.", true); }
 }
 
 async function dictaminarReporte(estatus) {
   const comentario = document.getElementById('admin-comment').value.trim();
-  if(!comentario) { showToast("Las notas contables de la dictaminación son obligatorias.", true); return; }
+  if(!comentario) { showToast("Las observaciones son obligatorias.", true); return; }
   try {
     await api('setEstatus', { id_reporte: currentActiveReporteId, estatus, comentario, usuario: SESSION.usuario, rol: SESSION.rol });
-    showToast(`Reporte marcado como: ${estatus}`);
-    closeModal(); loadReportesYViaticos();
+    showToast(`Reporte marcado como: ${estatus}`); closeModal(); loadReportesYViaticos();
   } catch(e) { showToast(e.message, true); }
 }
 
-async function editRechazado(idReporte) {
-  try {
-    const res = await api('getReporteDetalle', { id_reporte: idReporte });
-    ITEMS = res.registros.map(r => ({
-      id: 'row_' + (++rowSeq), fecha: r.fecha, categoria: r.categoria, comprobante: r.comprobante, concepto: r.concepto,
-      descripcion: r.descripcion, justificacion: r.justificacion, agencia_area: r.agencia_area, monto: r.monto
-    }));
-    editingId = idReporte;
-    document.getElementById('submit-btn').textContent = 'Guardar y Reenviar Reporte';
-    document.getElementById('cancel-edit-btn').classList.remove('hidden');
-    if(res.url_pdf_global) { document.getElementById('global-pdf-name').textContent = "Contiene PDF previo en Drive."; }
-    switchTab('nuevo'); renderItemsTable();
-  } catch(e) { showToast("Error al precargar el borrador.", true); }
+function editRechazado(idReporte, comentarioRechazo) {
+  editingId = idReporte;
+  const res = CACHE_REPORTES.find(r => r.id_reporte === idReporte);
+  if(!res) return;
+  document.getElementById('motivo').value = res.motivo;
+  document.getElementById('periodo-desde').value = res.periodo_desde;
+  document.getElementById('periodo-hasta').value = res.periodo_hasta;
+  document.getElementById('submit-btn').textContent = 'Guardar y Reenviar Reporte';
+  document.getElementById('cancel-edit-btn').classList.remove('hidden');
+  
+  if(comentarioRechazo) {
+    document.getElementById('rechazo-reporte-texto').textContent = comentarioRechazo;
+    document.getElementById('rechazo-reporte-container').classList.remove('hidden');
+  }
+  switchTab('nuevo');
 }
 
-function openViaticoModal(id, colaborador, monto) {
+function openViaticoModal(id, colaborador, monto, comentarioRechazo, puedeDictaminar) {
   currentActiveViaticoId = id;
   document.getElementById('v-modal-info').textContent = `Solicitud: ${id} | Empleado: ${colaborador} | Importe: $${Number(monto).toLocaleString('es-MX')}`;
-  document.getElementById('v-admin-comment').value = ''; document.getElementById('viatico-modal').classList.remove('hidden');
+  document.getElementById('v-admin-comment').value = '';
+  
+  // REQUERIMIENTO 6: Habilitar o deshabilitar inputs de guardado si es solo visor AUD
+  document.getElementById('admin-v-actions-block').classList.toggle('hidden', !puedeDictaminar);
+
+  const blockAudV = document.getElementById('aud-v-rechazo-block');
+  if(comentarioRechazo && comentarioRechazo !== 'undefined' && comentarioRechazo.trim() !== '') {
+    document.getElementById('aud-v-rechazo-texto').textContent = comentarioRechazo;
+    blockAudV.classList.remove('hidden');
+  } else { blockAudV.classList.add('hidden'); }
+
+  document.getElementById('viatico-modal').classList.remove('hidden');
 }
 function closeViaticoModal() { document.getElementById('viatico-modal').classList.add('hidden'); }
 
@@ -929,23 +866,14 @@ async function dictaminarViatico(estatus) {
   const comentario = document.getElementById('v-admin-comment').value.trim();
   if (!comentario) { showToast(`El comentario es requerido para dictaminar.`, true); return; }
   try {
-    const res = await api('setEstatusViatico', { id_solicitud: currentActiveViaticoId, estatus, comentario, usuario: SESSION.usuario, rol: SESSION.rol });
-    if (res.ok) { showToast(`Solicitud cambiada a: ${estatus}`); closeViaticoModal(); loadReportesYViaticos(); }
+    await api('setEstatusViatico', { id_solicitud: currentActiveViaticoId, estatus, comentario, usuario: SESSION.usuario, rol: SESSION.rol });
+    showToast(`Solicitud cambiada a: ${estatus}`); closeViaticoModal(); loadReportesYViaticos();
   } catch(e) { showToast("Error de conexión.", true); }
 }
 
 function closeModal() { document.getElementById('detalle-modal').classList.add('hidden'); }
 
-// Cargar la meta-versión de manera asíncrona en la pantalla de Login antes de autenticarse
-(async function cargarMetaVersionLogin() {
-  try {
-    const res = await fetch(CONFIG.APPS_SCRIPT_URL + "?action=doGet"); // Petición ligera de ping
-    // Forzar lectura manual de contingencia en lo que el bootstrap se activa
-    document.getElementById('login-footer-text').textContent = "MCM Suite v2.1.0-Prod | 13/Jul/2026";
-  } catch (e) {
-    document.getElementById('login-footer-text').textContent = "MCM Suite v2.1.0-Prod";
-  }
-  
+(async function init() {
   const saved = sessionStorage.getItem('mcm_session_v2');
   if (saved) { SESSION = JSON.parse(saved); runApplication(); }
 })();
