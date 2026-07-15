@@ -558,9 +558,25 @@ function switchTab(tab) {
   document.getElementById('tab-solicitud').classList.add('hidden');
   document.getElementById('tab-reportes').classList.add('hidden');
 
-  if(tab === 'nuevo') { document.getElementById('tab-nuevo').classList.remove('hidden'); document.getElementById('tab-btn-nuevo').classList.add('active'); }
-  if(tab === 'solicitud') { document.getElementById('tab-solicitud').classList.remove('hidden'); document.getElementById('tab-btn-solicitud').classList.add('active'); }
-  if(tab === 'reportes') { document.getElementById('tab-reportes').classList.remove('hidden'); document.getElementById('tab-btn-reportes').classList.add('active'); loadReportesYViaticos(); }
+  // LIMPIEZA ABSOLUTA DE RECHAZOS AL CAMBIAR DE PESTAÑA
+  document.getElementById('rechazo-reporte-container').classList.add('hidden');
+  document.getElementById('rechazo-viatico-container').classList.add('hidden');
+  document.getElementById('rechazo-reporte-texto').textContent = '';
+  document.getElementById('rechazo-viatico-texto').textContent = '';
+
+  if(tab === 'nuevo') { 
+    document.getElementById('tab-nuevo').classList.remove('hidden'); 
+    document.getElementById('tab-btn-nuevo').classList.add('active'); 
+  }
+  if(tab === 'solicitud') { 
+    document.getElementById('tab-solicitud').classList.remove('hidden'); 
+    document.getElementById('tab-btn-solicitud').classList.add('active'); 
+  }
+  if(tab === 'reportes') { 
+    document.getElementById('tab-reportes').classList.remove('hidden'); 
+    document.getElementById('tab-btn-reportes').classList.add('active'); 
+    loadReportesYViaticos(); 
+  }
 }
 
 function addItemRow() {
