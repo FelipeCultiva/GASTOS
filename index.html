@@ -683,22 +683,34 @@ function cancelEdit() {
   editingId = null; window.pdfGlobalBase64String = "";
   document.getElementById('submit-btn').textContent = 'Enviar Reporte a Revisión';
   document.getElementById('cancel-edit-btn').classList.add('hidden');
-  document.getElementById('motivo').value = ''; document.getElementById('periodo-desde').value = ''; document.getElementById('periodo-hasta').value = '';
+  document.getElementById('motivo').value = ''; 
+  document.getElementById('periodo-desde').value = ''; 
+  document.getElementById('periodo-hasta').value = '';
   document.getElementById('global-pdf-name').textContent = "Sin archivo cargado";
   document.getElementById('monto-asignado-input').value = '';
+  
+  // Forzar el cierre de los cuadros de diálogo de alerta
   document.getElementById('rechazo-reporte-container').classList.add('hidden');
+  document.getElementById('rechazo-viatico-container').classList.add('hidden');
+  
   ITEMS = []; addItemRow();
 }
 
 async function loadReportesYViaticos() {
   try {
+    // RESET INICIAL: Ocultar y limpiar cuadros para evitar persistencia visual
+    document.getElementById('rechazo-reporte-container').classList.add('hidden');
+    document.getElementById('rechazo-viatico-container').classList.add('hidden');
+    document.getElementById('rechazo-reporte-texto').textContent = '';
+    document.getElementById('rechazo-viatico-texto').textContent = '';
+
     const repData = await api('listReportes', { rol: SESSION.rol, clave_empleado: SESSION.clave_empleado });
     CACHE_REPORTES = repData.reportes || []; ejecutarFiltrosReportes();
 
     const viaData = await api('listViaticos', { rol: SESSION.rol, clave_empleado: SESSION.clave_empleado });
     CACHE_VIATICOS = viaData.solicitudes || []; ejecutarFiltrosViaticos();
     
-    // REQUERIMIENTO 5: Buscar si el usuario actual tiene reportes RECHAZADOS para desplegarles el mensaje
+    // Evaluar si el usuario actual tiene reportes RECHAZADOS
     const miUltimoRechazoG = CACHE_REPORTES.find(r => r.estatus === 'RECHAZADO' && r.clave_empleado === SESSION.clave_empleado);
     if(miUltimoRechazoG && miUltimoRechazoG.comentario_autorizacion) {
       document.getElementById('rechazo-reporte-texto').textContent = miUltimoRechazoG.comentario_autorizacion;
