@@ -798,22 +798,51 @@ function ejecutarFiltrosViaticos() {
 }
 
 function renderTablaViaticos(lista) {
-  const tbodyV = document.getElementById('viaticos-tbody'); tbodyV.innerHTML = '';
+  const tbodyV = document.getElementById('viaticos-tbody'); 
+  tbodyV.innerHTML = '';
+  
   lista.forEach(v => {
     const tr = document.createElement('tr');
-    // REQUERIMIENTO 6: Habilitar dictaminación o visualización a perfiles AUD
+    
+    // Controles de permisos administrativos/auditoría
     const puedeDictaminarV = (SESSION.rol === 'ADM_FULL' || SESSION.rol === 'ADM_VIAT') && v.estatus === 'ENVIADO';
     const esAuditor = String(SESSION.rol).includes('AUD') || puedeDictaminarV;
     
+    // Controles para el Colaborador Dueño del registro
+    const esDueno = v.clave_empleado === SESSION.clave_empleado;
+    const estaRechazado = v.estatus === 'RECHAZADO';
+
+    // Construcción dinámica de la celda de acciones
+    let accionesHtml = '—';
+
+    if (esAuditor) {
+      // Vista para administradores/auditores
+      accionesHtml = `<button class="btn btn-gold btn-sm" onclick="openViaticoModal('${v.id_solicitud}','${v.nombre_empleado}','${v.monto_solicitado}', '${v.comentario_autorizacion || ''}', ${puedeDictaminarV})">Revisar</button>`;
+    } else if (esDueno) {
+      // Vista para el colaborador común
+      if (estaRechazado) {
+        accionesHtml = `
+          <button class="btn btn-outline btn-sm" style="margin-right:5px;" onclick="openViaticoModal('${v.id_solicitud}','${v.nombre_empleado}','${v.monto_solicitado}', '${v.comentario_autorizacion || ''}', false)">Ver Rechazo</button>
+          <button class="btn btn-gold btn-sm" onclick="editViaticoRechazado('${v.id_solicitud}', '${v.comentario_autorizacion || ''}')">Corregir</button>
+        `;
+      } else {
+        // Para estatus ENVIADO o AUTORIZADO del usuario común, permitir abrir modo solo lectura
+        accionesHtml = `<button class="btn btn-outline btn-sm" onclick="openViaticoModal('${v.id_solicitud}','${v.nombre_empleado}','${v.monto_solicitado}', '${v.comentario_autorizacion || ''}', false)">Ver Detalle</button>`;
+      }
+    }
+
     tr.innerHTML = `
-      <td><b>${v.id_solicitud}</b></td><td>${v.nombre_empleado}</td><td>${formatFechaAmigable(v.periodo_desde)} al ${formatFechaAmigable(v.periodo_hasta)}</td>
-      <td>$${Number(v.monto_solicitado).toLocaleString('es-MX')}</td><td>${v.caja_entrega}</td><td><span class="estatus-pill estatus-${v.estatus}">${v.estatus}</span></td>
-      <td>${esAuditor ? `<button class="btn btn-gold btn-sm" onclick="openViaticoModal('${v.id_solicitud}','${v.nombre_empleado}','${v.monto_solicitado}', '${v.comentario_autorizacion || ''}', ${puedeDictaminarV})">Revisar</button>` : '—'}</td>
+      <td><b>${v.id_solicitud}</b></td>
+      <td>${v.nombre_empleado}</td>
+      <td>${formatFechaAmigable(v.periodo_desde)} al ${formatFechaAmigable(v.periodo_hasta)}</td>
+      <td>$${Number(v.monto_solicitado).toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+      <td>${v.caja_entrega}</td>
+      <td><span class="estatus-pill estatus-${v.estatus}">${v.estatus}</span></td>
+      <td>${accionesHtml}</td>
     `;
     tbodyV.appendChild(tr);
   });
 }
-
 async function openReporteDetalle(idReporte, puedeDictaminar, comentarioRechazo) {
   currentActiveReporteId = idReporte;
   document.getElementById('admin-comment').value = ''; 
@@ -872,6 +901,30 @@ function editRechazado(idReporte, comentarioRechazo) {
   switchTab('nuevo');
 }
 
+function editViaticoRechazado(idSolicitud, comentarioRechazo) {
+  // Buscar el registro en la memoria caché local
+  const res = CACHE_VIATICOS.find(v => v.id_solicitud === idSolicitud);
+  if (!res) return showToast("No se pudieron recuperar los datos de la solicitud.", true);
+  
+  // Rellenar campos del formulario de Viáticos
+  document.getElementById('sv-desde').value = res.periodo_desde;
+  document.getElementById('sv-hasta').value = res.periodo_hasta;
+  document.getElementById('sv-jefe').value = res.jefe_inmediato || '';
+  document.getElementById('sv-motivo').value = res.motivo;
+  document.getElementById('sv-monto').value = res.monto_solicitado;
+  document.getElementById('sv-caja').value = res.caja_entrega;
+  
+  // Inyectar el cuadro rojo con el motivo del rechazo en el formulario de captura
+  if (comentarioRechazo && comentarioRechazo !== 'undefined' && comentarioRechazo.trim() !== '') {
+    document.getElementById('rechazo-viatico-texto').textContent = comentarioRechazo;
+    document.getElementById('rechazo-viatico-container').classList.remove('hidden');
+  }
+  
+  // Cambiar a la pestaña de solicitudes de viáticos para corregir
+  switchTab('solicitud');
+  showToast(`Editando Solicitud ${idSolicitud}. Realice las correcciones y vuelva a enviar.`);
+}
+  
 function openViaticoModal(id, colaborador, monto, comentarioRechazo, puedeDictaminar) {
   currentActiveViaticoId = id;
   document.getElementById('v-modal-info').textContent = `Solicitud: ${id} | Empleado: ${colaborador} | Importe: $${Number(monto).toLocaleString('es-MX')}`;
