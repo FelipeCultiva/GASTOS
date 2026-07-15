@@ -223,12 +223,10 @@ table.reportes tr:hover{background:var(--gray-050);}
         
         <div class="card">
           <!-- REQUERIMIENTO 2: Campo superior derecho de Monto Asignado -->
-          <div style="position:absolute; right:20px; top:15px; display:flex; gap:10px; align-items:center;">
-            <div class="field" style="margin:0; width:190px;">
-              <label style="font-size:10px;">Monto Viáticos Asignado ($)</label>
-              <input type="number" id="monto-asignado-input" placeholder="0.00" step="0.01" style="padding:6px 10px; font-size:13px;" oninput="calcularDiferenciaViaticos()">
-            </div>
-            <button class="btn btn-outline btn-sm" style="margin-top:16px;" onclick="imprimirPantalla('tab-nuevo')">🖨️ Imprimir Reporte</button>
+          <!-- REQUERIMIENTO 2: Campo resaltado con fondo especial y alerta visual -->
+          <div class="field" style="margin:0; width:210px; background: var(--gold-100); padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--gold-600); box-shadow: 0 2px 8px rgba(200,155,60,0.15);">
+            <label style="font-size:10.5px; color: var(--navy-900); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">💰 Mto. Viáticos Asignado</label>
+            <input type="number" id="monto-asignado-input" placeholder="0.00" step="0.01" style="padding:6px 10px; font-size:14px; font-weight: bold; border-color: var(--gold-600); color: var(--navy-900); background: var(--white);" oninput="calcularDiferenciaViaticos()">
           </div>
 
           <h2>Periodo de comprobación</h2>
@@ -656,22 +654,74 @@ async function submitReporte() {
   const motivo = document.getElementById('motivo').value.trim();
   const archivoAdjunto = window.pdfGlobalBase64String || "";
 
-  if (!desde || !hasta || !motivo) return showToast("Por favor complementa el periodo y el motivo.", true);
-  if (ITEMS.length === 0) return showToast("Debe agregar al menos una línea de gasto.", true);
-  if (!archivoAdjunto && !editingId) return showToast("Es obligatorio cargar el PDF único.", true);
+  // REQUERIMIENTO 1: Validar campos obligatorios de la cabecera
+  if (!desde || !hasta || !motivo) {
+    return showToast("Por favor complementa las fechas del periodo y el motivo del reporte.", true);
+  }
+
+  // REQUERIMIENTO 3: Control cronológico estricto de fechas del periodo
+  if (hasta < desde) {
+    return showToast("⚠️ Error cronológico: La 'Fecha Hasta' no puede ser anterior a la 'Fecha Desde'.", true);
+  }
+
+  if (ITEMS.length === 0) {
+    return showToast("Debe agregar al menos una línea de gasto al detalle.", true);
+  }
+  
+  if (!archivoAdjunto && !editingId) {
+    return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
+  }
+
+  // REQUERIMIENTO 1: Validar celdas obligatorias de la tabla (Excepto Justificación)
+  for (let i = 0; i < ITEMS.length; i++) {
+    const it = ITEMS[i];
+    const n = i + 1;
+    
+    if (!it.fecha) return showToast(`Fila ${n}: La fecha del gasto es obligatoria.`, true);
+    if (!it.categoria) return showToast(`Fila ${n}: Debe seleccionar una categoría de gasto.`, true);
+    if (!it.comprobante) return showToast(`Fila ${n}: Debe seleccionar un tipo de comprobante.`, true);
+    if (!it.concepto) return showToast(`Fila ${n}: Debe seleccionar un concepto del catálogo.`, true);
+    if (!it.descripcion || !it.descripcion.trim()) return showToast(`Fila ${n}: La descripción detallada del gasto es obligatoria.`, true);
+    if (!it.agencia_area) return showToast(`Fila ${n}: Debe asignar una Agencia / Área de destino.`, true);
+    
+    const montoNum = parseFloat(it.monto);
+    if (isNaN(montoNum) || montoNum <= 0) {
+      return showToast(`Fila ${n}: El monto debe ser un número válido y mayor a cero.`, true);
+    }
+    
+    // Validar que la fecha del gasto pertenezca al rango declarado arriba
+    if (it.fecha < desde || it.fecha > hasta) {
+      return showToast(`Fila ${n}: La fecha del gasto está fuera del periodo declarado (${formatFechaAmigable(desde)} al ${formatFechaAmigable(hasta)}).`, true);
+    }
+  }
 
   const payload = {
-    clave_empleado: BOOTSTRAP.empleado.clave, nombre_empleado: BOOTSTRAP.empleado.nombre,
-    puesto: BOOTSTRAP.empleado.puesto, area: BOOTSTRAP.empleado.sucursal_area,
-    centro_costo: BOOTSTRAP.empleado.centro_costo, periodo_desde: desde, periodo_hasta: hasta,
-    motivo: motivo, items: ITEMS, pdfGlobalBase64: archivoAdjunto
+    clave_empleado: BOOTSTRAP.empleado.clave, 
+    nombre_empleado: BOOTSTRAP.empleado.nombre,
+    puesto: BOOTSTRAP.empleado.puesto, 
+    area: BOOTSTRAP.empleado.sucursal_area,
+    centro_costo: BOOTSTRAP.empleado.centro_costo, 
+    periodo_desde: desde, 
+    periodo_hasta: hasta,
+    motivo: motivo, 
+    items: ITEMS, 
+    pdfGlobalBase64: archivoAdjunto
   };
 
   try {
-    if (editingId) { payload.id_reporte = editingId; await api('updateReporte', payload); showToast("Reporte reenviado."); } 
-    else { await api('submitReporte', payload); showToast("Reporte enviado con éxito."); }
-    cancelEdit(); switchTab('reportes');
-  } catch (e) { showToast(e.message, true); }
+    if (editingId) { 
+      payload.id_reporte = editingId; 
+      await api('updateReporte', payload); 
+      showToast("Reporte corregido y reenviado."); 
+    } else { 
+      await api('submitReporte', payload); 
+      showToast("Reporte enviado con éxito a revisión contable."); 
+    }
+    cancelEdit(); 
+    switchTab('reportes');
+  } catch (e) { 
+    showToast(e.message, true); 
+  }
 }
 
 async function submitSolicitudViaticos() {
