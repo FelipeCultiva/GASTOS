@@ -425,12 +425,8 @@ let CACHE_REPORTES = []; let CACHE_VIATICOS = [];
 
 // ENRUTADOR INTELIGENTE (Detecta si está en Google o en GitHub automáticamente)
 function api(action, payload) {
-
-// ENRUTADOR INTELIGENTE (Detecta si está en Google o en GitHub automáticamente)
-function api(action, payload) {
   showLoading(true);
   
-  // Si está corriendo dentro de Google Apps Script, usa el canal nativo rápido
   if (typeof google !== 'undefined' && google.script && google.script.run) {
     return new Promise((resolve, reject) => {
       google.script.run
@@ -452,7 +448,6 @@ function api(action, payload) {
     });
   } 
   
-  // SI ESTÁ EN GITHUB: Usa una petición Fetch POST tradicional directo a la URL de producción
   return new Promise((resolve, reject) => {
     fetch(CONFIG.APPS_SCRIPT_URL, {
       method: "POST",
@@ -1006,7 +1001,6 @@ function closeModal() { document.getElementById('detalle-modal').classList.add('
 
 // ARRANQUE SEGURO CON SOPORTE HÍBRIDO GOOGLE / GITHUB
 (function initPoller() {
-  // Si detecta que está en el entorno de Google Apps Script, espera a que cargue la API nativa
   if (window.location.hostname.includes('googleusercontent.com') || window.location.hostname.includes('google.com')) {
     const maxIntentos = 50; let intentos = 0;
     function checkAPI() {
@@ -1022,7 +1016,6 @@ function closeModal() { document.getElementById('detalle-modal').classList.add('
     }
     checkAPI();
   } else {
-    // SI ESTÁ CORRIENDO DESDE GITHUB PAGES: Salta el validador e inicia la carga por Fetch directo de golpe
     ejecutarCargaInicial();
   }
 
@@ -1040,7 +1033,6 @@ function closeModal() { document.getElementById('detalle-modal').classList.add('
           showLoading(false);
         }
       } catch(e) { 
-        // Fallback por si la base de datos requiere credenciales para el bootstrap inicial
         document.getElementById('login-footer-text').textContent = " MCM | Suite Operativa — Digite credenciales";
         showLoading(false); 
       }
