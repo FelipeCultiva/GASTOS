@@ -414,10 +414,18 @@ table.reportes tr:hover{background:var(--gray-050);}
 <div id="loading" class="loading-overlay hidden"><div class="spinner-clock"></div><h2>Procesando Información...</h2></div>
 
 <script>
+// DECLARACIÓN OBLIGATORIA DEL ENLACE DE PRODUCCIÓN
+const CONFIG = {
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycby3U7QnkmXGrMqKaLSRiZY3t_0I1REFkDKl9arH_f1RA_VN8F-othVr8gdn-o-P3foq/exec"
+};
+
 let SESSION = null; let BOOTSTRAP = null; let ITEMS = []; let rowSeq = 0; let editingId = null;
 let currentActiveReporteId = null; let currentActiveViaticoId = null; window.pdfGlobalBase64String = "";
 let CACHE_REPORTES = []; let CACHE_VIATICOS = [];
 
+// ENRUTADOR INTELIGENTE (Detecta si está en Google o en GitHub automáticamente)
+function api(action, payload) {
+...
 // ENRUTADOR INTELIGENTE (Detecta si está en Google o en GitHub automáticamente)
 function api(action, payload) {
   showLoading(true);
