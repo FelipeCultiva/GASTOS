@@ -793,7 +793,6 @@ function ejecutarFiltrosReportes() {
   renderTablaGastos(filtered);
 }
 
-// CORRECCIÓN FIX: Renderizado explícito de celdas y mapeo dinámico regional
 function renderTablaGastos(lista) {
   const tbodyR = document.getElementById('reportes-tbody'); tbodyR.innerHTML = '';
   lista.forEach(r => {
