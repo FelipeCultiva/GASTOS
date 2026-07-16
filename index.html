@@ -472,20 +472,29 @@ let SESSION = null; let BOOTSTRAP = null; let ITEMS = []; let rowSeq = 0; let ed
 let currentActiveReporteId = null; let currentActiveViaticoId = null; window.pdfGlobalBase64String = "";
 let CACHE_REPORTES = []; let CACHE_VIATICOS = [];
 
-// NUEVO ENRUTADOR ASÍNCRONO OFICIAL NATIVO DE GOOGLE
+// ENRUTADOR ASÍNCRONO NATIVO OPTIMIZADO
 function api(action, payload) {
   showLoading(true);
   return new Promise((resolve, reject) => {
+    if (typeof google === 'undefined' || !google.script || !google.script.run) {
+      showLoading(false);
+      reject(new Error("La API de Google no se ha cargado. Por favor, refresca la página."));
+      return;
+    }
     google.script.run
       .withSuccessHandler((responseString) => {
         showLoading(false);
-        const data = JSON.parse(responseString);
-        if (!data.ok) reject(new Error(data.error || "Excepción en servidor"));
-        else resolve(data);
+        try {
+          const data = JSON.parse(responseString);
+          if (!data.ok) reject(new Error(data.error || "Excepción en servidor"));
+          else resolve(data);
+        } catch (err) {
+          reject(new Error("Respuesta inválida del servidor: " + err.message));
+        }
       })
       .withFailureHandler((err) => {
         showLoading(false);
-        reject(new Error("Error crítico de comunicación: " + err.message));
+        reject(new Error("Error crítico en el backend de Google: " + (err.message || err)));
       })
       .ejecutarAccionServidor(action, payload);
   });
@@ -498,48 +507,12 @@ function showToast(msg, isError) {
   setTimeout(() => t.classList.remove('show'), 4000);
 }
 
-// ... Mantén intactas las funciones intermedias (formatFechaAmigable, calcularDiferenciaViaticos, etc.) ...
-
-// CONFIGURACIÓN DE INICIO TOTALMENTE AUTOMATIZADA
-(async function init() {
-  showLoading(true);
-  try {
-    const saved = sessionStorage.getItem('mcm_session_v2');
-    if (saved) { 
-      SESSION = JSON.parse(saved); 
-      await runApplication(); 
-    } else {
-      // Fuerza la descarga y pintado de la versión desde el Sheets aun sin loggearse
-      // Esto destraba el mensaje "Cargando meta-información..." al abrir el sitio
-      google.script.run
-        .withSuccessHandler((responseString) => {
-          showLoading(false);
-          const data = JSON.parse(responseString);
-          const metaText = `Versión: ${data.version_sistema || 'v2.1.0'} | Publicación: ${formatFechaAmigable(data.fecha_publicacion) || '13/Jul/2026'}`;
-          document.getElementById('login-footer-text').textContent = metaText;
-        })
-        .ejecutarAccionServidor('bootstrap', { clave_empleado: '' });
-    }
-  } catch(e) {
-    showLoading(false);
-  }
-})();
-
-function showLoading(v) { document.getElementById('loading').classList.toggle('hidden', !v); }
-function showToast(msg, isError) {
-  const t = document.getElementById('toast'); t.textContent = msg;
-  t.className = 'toast show' + (isError ? ' error' : '');
-  setTimeout(() => t.classList.remove('show'), 4000);
-}
-
-// REQUERIMIENTO 3: Función especializada de impresión ajustada a hoja carta
 function imprimirPantalla(sectionId) {
   document.querySelectorAll('section').forEach(s => s.classList.remove('print-active'));
   document.getElementById(sectionId).classList.add('print-active');
   window.print();
 }
 
-// REQUERIMIENTO 2: Lógica matemática con condicionales para Saldo a Devolver / Saldo a Favor
 function calcularDiferenciaViaticos() {
   const asignado = parseFloat(document.getElementById('monto-asignado-input').value) || 0;
   const gastado = ITEMS.reduce((s, it) => s + (parseFloat(it.monto) || 0), 0);
@@ -609,7 +582,6 @@ async function runApplication() {
     document.getElementById('tab-btn-solicitud').classList.remove('hidden');
     document.getElementById('tab-btn-reportes').textContent = (!SESSION.permisos.revisa_gastos && !SESSION.permisos.revisa_viaticos) ? "Mis Solicitudes / Historial" : "Bandeja Reportes / Historial";
     
-    // Inyectar datos duplicados en ambos encabezados
     document.querySelectorAll('.emp-nro-val').forEach(el => el.textContent = BOOTSTRAP.empleado.nro_empleado || '—');
     document.querySelectorAll('.emp-nombre-val').forEach(el => el.textContent = BOOTSTRAP.empleado.nombre || '—');
     document.querySelectorAll('.emp-puesto-val').forEach(el => el.textContent = BOOTSTRAP.empleado.puesto || '—');
@@ -632,7 +604,6 @@ function switchTab(tab) {
   document.getElementById('tab-solicitud').classList.add('hidden');
   document.getElementById('tab-reportes').classList.add('hidden');
 
-  // LIMPIEZA ABSOLUTA DE RECHAZOS AL CAMBIAR DE PESTAÑA
   document.getElementById('rechazo-reporte-container').classList.add('hidden');
   document.getElementById('rechazo-viatico-container').classList.add('hidden');
   document.getElementById('rechazo-reporte-texto').textContent = '';
@@ -727,29 +698,13 @@ async function submitReporte() {
   const motivo = document.getElementById('motivo').value.trim();
   const archivoAdjunto = window.pdfGlobalBase64String || "";
 
-  // REQUERIMIENTO 1: Validar campos obligatorios de la cabecera
-  if (!desde || !hasta || !motivo) {
-    return showToast("Por favor complementa las fechas del periodo y el motivo del reporte.", true);
-  }
+  if (!desde || !hasta || !motivo) return showToast("Por favor complementa las fechas del periodo y el motivo del reporte.", true);
+  if (hasta < desde) return showToast("⚠️ Error cronológico: La 'Fecha Hasta' no puede ser anterior a la 'Fecha Desde'.", true);
+  if (ITEMS.length === 0) return showToast("Debe agregar al menos una línea de gasto al detalle.", true);
+  if (!archivoAdjunto && !editingId) return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
 
-  // REQUERIMIENTO 3: Control cronológico estricto de fechas del periodo
-  if (hasta < desde) {
-    return showToast("⚠️ Error cronológico: La 'Fecha Hasta' no puede ser anterior a la 'Fecha Desde'.", true);
-  }
-
-  if (ITEMS.length === 0) {
-    return showToast("Debe agregar al menos una línea de gasto al detalle.", true);
-  }
-  
-  if (!archivoAdjunto && !editingId) {
-    return showToast("Es obligatorio cargar el PDF único de comprobación del reporte.", true);
-  }
-
-  // REQUERIMIENTO 1: Validar celdas obligatorias de la tabla (Excepto Justificación)
   for (let i = 0; i < ITEMS.length; i++) {
-    const it = ITEMS[i];
-    const n = i + 1;
-    
+    const it = ITEMS[i]; const n = i + 1;
     if (!it.fecha) return showToast(`Fila ${n}: La fecha del gasto es obligatoria.`, true);
     if (!it.categoria) return showToast(`Fila ${n}: Debe seleccionar una categoría de gasto.`, true);
     if (!it.comprobante) return showToast(`Fila ${n}: Debe seleccionar un tipo de comprobante.`, true);
@@ -758,27 +713,15 @@ async function submitReporte() {
     if (!it.agencia_area) return showToast(`Fila ${n}: Debe asignar una Agencia / Área de destino.`, true);
     
     const montoNum = parseFloat(it.monto);
-    if (isNaN(montoNum) || montoNum <= 0) {
-      return showToast(`Fila ${n}: El monto debe ser un número válido y mayor a cero.`, true);
-    }
-    
-    // Validar que la fecha del gasto pertenezca al rango declarado arriba
-    if (it.fecha < desde || it.fecha > hasta) {
-      return showToast(`Fila ${n}: La fecha del gasto está fuera del periodo declarado (${formatFechaAmigable(desde)} al ${formatFechaAmigable(hasta)}).`, true);
-    }
+    if (isNaN(montoNum) || montoNum <= 0) return showToast(`Fila ${n}: El monto debe ser un número válido y mayor a cero.`, true);
+    if (it.fecha < desde || it.fecha > hasta) return showToast(`Fila ${n}: La fecha del gasto está fuera del periodo declarado.`, true);
   }
 
   const payload = {
-    clave_empleado: BOOTSTRAP.empleado.clave, 
-    nombre_empleado: BOOTSTRAP.empleado.nombre,
-    puesto: BOOTSTRAP.empleado.puesto, 
-    area: BOOTSTRAP.empleado.sucursal_area,
-    centro_costo: BOOTSTRAP.empleado.centro_costo, 
-    periodo_desde: desde, 
-    periodo_hasta: hasta,
-    motivo: motivo, 
-    items: ITEMS, 
-    pdfGlobalBase64: archivoAdjunto
+    clave_empleado: BOOTSTRAP.empleado.clave, nombre_empleado: BOOTSTRAP.empleado.nombre,
+    puesto: BOOTSTRAP.empleado.puesto, area: BOOTSTRAP.empleado.sucursal_area,
+    centro_costo: BOOTSTRAP.empleado.centro_costo, periodo_desde: desde, periodo_hasta: hasta,
+    motivo: motivo, items: ITEMS, pdfGlobalBase64: archivoAdjunto
   };
 
   try {
@@ -790,11 +733,8 @@ async function submitReporte() {
       await api('submitReporte', payload); 
       showToast("Reporte enviado con éxito a revisión contable."); 
     }
-    cancelEdit(); 
-    switchTab('reportes');
-  } catch (e) { 
-    showToast(e.message, true); 
-  }
+    cancelEdit(); switchTab('reportes');
+  } catch (e) { showToast(e.message, true); }
 }
 
 async function submitSolicitudViaticos() {
@@ -805,70 +745,43 @@ async function submitSolicitudViaticos() {
   const monto = parseFloat(document.getElementById('sv-monto').value);
   const caja = document.getElementById('sv-caja').value;
 
-  if(!desde || !hasta || !jefe || !motivo || !monto || !caja) {
-    return showToast("Completa todos los campos obligatorios del formulario.", true);
-  }
-
-  // CANDADO DE SEGURIDAD QA: Evitar que la fecha hasta sea menor al inicio
-  if (hasta < desde) {
-    return showToast("⚠️ Error cronológico: La 'Fecha Viaje Hasta' no puede ser anterior a la 'Fecha Viaje Desde'.", true);
-  }
+  if(!desde || !hasta || !jefe || !motivo || !monto || !caja) return showToast("Completa todos los campos obligatorios del formulario.", true);
+  if (hasta < desde) return showToast("⚠️ Error cronológico: La 'Fecha Viaje Hasta' no puede ser anterior a la 'Fecha Viaje Desde'.", true);
 
   localStorage.setItem('mcm_jefe_' + SESSION.clave_empleado, jefe);
 
   try {
     const res = await api('submitViaticos', {
-      clave_empleado: BOOTSTRAP.empleado.clave, 
-      nombre_empleado: BOOTSTRAP.empleado.nombre,
-      puesto: BOOTSTRAP.empleado.puesto, 
-      area: BOOTSTRAP.empleado.sucursal_area,
-      centro_costo: BOOTSTRAP.empleado.centro_costo, 
-      periodo_desde: desde, 
-      periodo_hasta: hasta,
-      motivo: motivo, 
-      jefe_inmediato: jefe, 
-      monto_solicitado: monto, 
-      caja_entrega: caja
+      clave_empleado: BOOTSTRAP.empleado.clave, nombre_empleado: BOOTSTRAP.empleado.nombre,
+      puesto: BOOTSTRAP.empleado.puesto, area: BOOTSTRAP.empleado.sucursal_area,
+      centro_costo: BOOTSTRAP.empleado.centro_costo, periodo_desde: desde, periodo_hasta: hasta,
+      motivo: motivo, jefe_inmediato: jefe, monto_solicitado: monto, caja_entrega: caja
     });
     showToast("Solicitud procesada con éxito: " + res.id_solicitud);
-    
-    // Limpieza de campos post-envío exitoso
     document.getElementById('sv-desde').value = '';
     document.getElementById('sv-hasta').value = '';
-    document.getElementById('sv-hasta').removeAttribute('min'); // Limpiar el límite del calendario
-    document.getElementById('sv-motivo').value = ''; 
-    document.getElementById('sv-monto').value = '';
-    
+    document.getElementById('sv-hasta').removeAttribute('min');
+    document.getElementById('sv-motivo').value = ''; document.getElementById('sv-monto').value = '';
     switchTab('reportes');
-  } catch(e) { 
-    showToast(e.message, true); 
-  }
+  } catch(e) { showToast(e.message, true); }
 }
   
 function cancelEdit() {
   editingId = null; window.pdfGlobalBase64String = "";
   document.getElementById('submit-btn').textContent = 'Enviar Reporte a Revisión';
   document.getElementById('cancel-edit-btn').classList.add('hidden');
-  document.getElementById('motivo').value = ''; 
-  document.getElementById('periodo-desde').value = ''; 
-  document.getElementById('periodo-hasta').value = '';
+  document.getElementById('motivo').value = ''; document.getElementById('periodo-desde').value = ''; document.getElementById('periodo-hasta').value = '';
   document.getElementById('global-pdf-name').textContent = "Sin archivo cargado";
   document.getElementById('monto-asignado-input').value = '';
-  
-  // Forzar el cierre de los cuadros de diálogo de alerta
   document.getElementById('rechazo-reporte-container').classList.add('hidden');
   document.getElementById('rechazo-viatico-container').classList.add('hidden');
-  
   ITEMS = []; addItemRow();
 }
 
 async function loadReportesYViaticos() {
   try {
-    // RESET INICIAL: Ocultar y limpiar cuadros para evitar persistencia visual
     document.getElementById('rechazo-reporte-container').classList.add('hidden');
     document.getElementById('rechazo-viatico-container').classList.add('hidden');
-    document.getElementById('rechazo-reporte-texto').textContent = '';
-    document.getElementById('rechazo-viatico-texto').textContent = '';
 
     const repData = await api('listReportes', { rol: SESSION.rol, clave_empleado: SESSION.clave_empleado });
     CACHE_REPORTES = repData.reportes || []; ejecutarFiltrosReportes();
@@ -876,7 +789,6 @@ async function loadReportesYViaticos() {
     const viaData = await api('listViaticos', { rol: SESSION.rol, clave_empleado: SESSION.clave_empleado });
     CACHE_VIATICOS = viaData.solicitudes || []; ejecutarFiltrosViaticos();
     
-    // Evaluar si el usuario actual tiene reportes RECHAZADOS
     const miUltimoRechazoG = CACHE_REPORTES.find(r => r.estatus === 'RECHAZADO' && r.clave_empleado === SESSION.clave_empleado);
     if(miUltimoRechazoG && miUltimoRechazoG.comentario_autorizacion) {
       document.getElementById('rechazo-reporte-texto').textContent = miUltimoRechazoG.comentario_autorizacion;
@@ -888,7 +800,6 @@ async function loadReportesYViaticos() {
       document.getElementById('rechazo-viatico-texto').textContent = miUltimoRechazoV.comentario_autorizacion;
       document.getElementById('rechazo-viatico-container').classList.remove('hidden');
     }
-
   } catch (e) { showToast("Error al cargar bandejas.", true); }
 }
 
@@ -948,51 +859,39 @@ function ejecutarFiltrosViaticos() {
 }
 
 function renderTablaViaticos(lista) {
-  const tbodyV = document.getElementById('viaticos-tbody'); 
-  tbodyV.innerHTML = '';
-  
+  const tbodyV = document.getElementById('viaticos-tbody'); tbodyV.innerHTML = '';
   lista.forEach(v => {
     const tr = document.createElement('tr');
-    
-    // Controles de permisos administrativos/auditoría
     const puedeDictaminarV = (SESSION.rol === 'ADM_FULL' || SESSION.rol === 'ADM_VIAT') && v.estatus === 'ENVIADO';
     const esAuditor = String(SESSION.rol).includes('AUD') || puedeDictaminarV;
-    
-    // Controles para el Colaborador Dueño del registro
     const esDueno = v.clave_empleado === SESSION.clave_empleado;
     const estaRechazado = v.estatus === 'RECHAZADO';
 
-    // Construcción dinámica de la celda de acciones
     let accionesHtml = '—';
-
     if (esAuditor) {
-      // Vista para administradores/auditores
       accionesHtml = `<button class="btn btn-gold btn-sm" onclick="openViaticoModal('${v.id_solicitud}','${v.nombre_empleado}','${v.monto_solicitado}', '${v.comentario_autorizacion || ''}', ${puedeDictaminarV})">Revisar</button>`;
     } else if (esDueno) {
-      // Vista para el colaborador común
       if (estaRechazado) {
         accionesHtml = `
           <button class="btn btn-outline btn-sm" style="margin-right:5px;" onclick="openViaticoModal('${v.id_solicitud}','${v.nombre_empleado}','${v.monto_solicitado}', '${v.comentario_autorizacion || ''}', false)">Ver Rechazo</button>
           <button class="btn btn-gold btn-sm" onclick="editViaticoRechazado('${v.id_solicitud}', '${v.comentario_autorizacion || ''}')">Corregir</button>
         `;
       } else {
-        // Para estatus ENVIADO o AUTORIZADO del usuario común, permitir abrir modo solo lectura
         accionesHtml = `<button class="btn btn-outline btn-sm" onclick="openViaticoModal('${v.id_solicitud}','${v.nombre_empleado}','${v.monto_solicitado}', '${v.comentario_autorizacion || ''}', false)">Ver Detalle</button>`;
       }
     }
 
     tr.innerHTML = `
-      <td><b>${v.id_solicitud}</b></td>
-      <td>${v.nombre_empleado}</td>
+      <td><b>${v.id_solicitud}</b></td><td>${v.nombre_empleado}</td>
       <td>${formatFechaAmigable(v.periodo_desde)} al ${formatFechaAmigable(v.periodo_hasta)}</td>
       <td>$${Number(v.monto_solicitado).toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-      <td>${v.caja_entrega}</td>
-      <td><span class="estatus-pill estatus-${v.estatus}">${v.estatus}</span></td>
+      <td>${v.caja_entrega}</td><td><span class="estatus-pill estatus-${v.estatus}">${v.estatus}</span></td>
       <td>${accionesHtml}</td>
     `;
     tbodyV.appendChild(tr);
   });
 }
+
 async function openReporteDetalle(idReporte, puedeDictaminar, comentarioRechazo) {
   currentActiveReporteId = idReporte;
   document.getElementById('admin-comment').value = ''; 
@@ -1001,7 +900,6 @@ async function openReporteDetalle(idReporte, puedeDictaminar, comentarioRechazo)
   if(puedeDictaminar) document.getElementById('admin-actions-block').classList.remove('hidden');
   else document.getElementById('admin-actions-block').classList.add('hidden');
 
-  // REQUERIMIENTO 6: Mostrar diálogos de rechazo a perfiles AUD/ADM
   const blockAud = document.getElementById('aud-rechazo-view-block');
   if(comentarioRechazo && comentarioRechazo !== 'undefined' && comentarioRechazo.trim() !== '') {
     document.getElementById('aud-rechazo-texto').textContent = comentarioRechazo;
@@ -1052,11 +950,9 @@ function editRechazado(idReporte, comentarioRechazo) {
 }
 
 function editViaticoRechazado(idSolicitud, comentarioRechazo) {
-  // Buscar el registro en la memoria caché local
   const res = CACHE_VIATICOS.find(v => v.id_solicitud === idSolicitud);
   if (!res) return showToast("No se pudieron recuperar los datos de la solicitud.", true);
   
-  // Rellenar campos del formulario de Viáticos
   document.getElementById('sv-desde').value = res.periodo_desde;
   document.getElementById('sv-hasta').value = res.periodo_hasta;
   document.getElementById('sv-jefe').value = res.jefe_inmediato || '';
@@ -1064,36 +960,25 @@ function editViaticoRechazado(idSolicitud, comentarioRechazo) {
   document.getElementById('sv-monto').value = res.monto_solicitado;
   document.getElementById('sv-caja').value = res.caja_entrega;
   
-  // Inyectar el cuadro rojo con el motivo del rechazo en el formulario de captura
   if (comentarioRechazo && comentarioRechazo !== 'undefined' && comentarioRechazo.trim() !== '') {
     document.getElementById('rechazo-viatico-texto').textContent = comentarioRechazo;
     document.getElementById('rechazo-viatico-container').classList.remove('hidden');
   }
   
-  // Cambiar a la pestaña de solicitudes de viáticos para corregir
   switchTab('solicitud');
   showToast(`Editando Solicitud ${idSolicitud}. Realice las correcciones y vuelva a enviar.`);
 }
   
 function openViaticoModal(id, colaborador, monto, comentarioRechazo, puedeDictaminar) {
   currentActiveViaticoId = id;
-  
-  // 1. Inyectar metadatos generales
   document.getElementById('v-modal-info').innerHTML = `<b>Solicitud:</b> ${id}<br><b>Colaborador:</b> ${colaborador}<br><b>Importe solicitado:</b> $${Number(monto).toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
   document.getElementById('v-admin-comment').value = '';
 
-  // 2. Cambiar dinámicamente el título del modal según el contexto de permisos
   const tituloModal = document.getElementById('v-modal-titulo');
-  if (puedeDictaminar) {
-    tituloModal.textContent = "Dictaminar Anticipo de Viáticos";
-  } else {
-    tituloModal.textContent = "Detalle de Solicitud de Viáticos";
-  }
+  tituloModal.textContent = puedeDictaminar ? "Dictaminar Anticipo de Viáticos" : "Detalle de Solicitud de Viáticos";
 
-  // 3. Controlar la visibilidad de las acciones del administrador
   document.getElementById('admin-v-actions-block').classList.toggle('hidden', !puedeDictaminar);
 
-  // 4. Mostrar de forma correcta el comentario de rechazo o autorización al usuario común o auditor
   const blockAudV = document.getElementById('aud-v-rechazo-block');
   const tituloRechazo = document.getElementById('aud-v-rechazo-titulo');
   
@@ -1105,8 +990,6 @@ function openViaticoModal(id, colaborador, monto, comentarioRechazo, puedeDictam
   } else { 
     blockAudV.classList.add('hidden'); 
   }
-
-  // 5. Encender ventana emergente
   document.getElementById('viatico-modal').classList.remove('hidden');
 }
   
@@ -1123,9 +1006,39 @@ async function dictaminarViatico(estatus) {
 
 function closeModal() { document.getElementById('detalle-modal').classList.add('hidden'); }
 
-(async function init() {
-  const saved = sessionStorage.getItem('mcm_session_v2');
-  if (saved) { SESSION = JSON.parse(saved); runApplication(); }
+// MOTOR DE INICIALIZACIÓN SEGURO CON PROTECCIÓN DE CONCURRENCIA
+(function initPoller() {
+  const maxIntentos = 50; let intentos = 0;
+  function checkAPI() {
+    intentos++;
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      // API de Google inyectada correctamente en el DOM
+      (async function() {
+        try {
+          const saved = sessionStorage.getItem('mcm_session_v2');
+          if (saved) { 
+            SESSION = JSON.parse(saved); 
+            await runApplication(); 
+          } else {
+            google.script.run
+              .withSuccessHandler((responseString) => {
+                showLoading(false);
+                const data = JSON.parse(responseString);
+                const metaText = `Versión: ${data.version_sistema || 'v2.1.0'} | Publicación: ${formatFechaAmigable(data.fecha_publicacion) || '13/Jul/2026'}`;
+                document.getElementById('login-footer-text').textContent = metaText;
+              })
+              .ejecutarAccionServidor('bootstrap', { clave_empleado: '' });
+          }
+        } catch(e) { showLoading(false); }
+      })();
+    } else if (intentos < maxIntentos) {
+      setTimeout(checkAPI, 100); // Reintentar cada 100ms
+    } else {
+      showLoading(false);
+      document.getElementById('login-footer-text').textContent = "Error: Tiempo de espera agotado al conectar con Google.";
+    }
+  }
+  checkAPI();
 })();
 </script>
 </body>
