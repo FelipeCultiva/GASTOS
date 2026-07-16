@@ -1059,15 +1059,11 @@ function openViaticoModal(id, colaborador, monto, comentarioRechazo, puedeDictam
   if (comentarioRechazo && comentarioRechazo !== 'undefined' && comentarioRechazo.trim() !== '') {
     document.getElementById('aud-v-rechazo-texto').textContent = comentarioRechazo;
     blockAudV.classList.remove('hidden');
-    blockAudV.className = "rechazo-box"; 
+    blockAudV.className = "rechazo-box";
     tituloRechazo.textContent = "Comentarios / Notas Contables:";
   } else { 
     blockAudV.classList.add('hidden'); 
   }
-
-  // 5. Encender ventana emergente
-  document.getElementById('viatico-modal').classList.remove('hidden');
-}
 
   // 5. Encender ventana emergente
   document.getElementById('viatico-modal').classList.remove('hidden');
