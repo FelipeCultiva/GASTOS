@@ -446,32 +446,6 @@ const CONFIG = {
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycby3U7QnkmXGrMqKaLSRiZY3t_0I1REFkDKl9arH_f1RA_VN8F-othVr8gdn-o-P3foq/exec"
 };
 
-function formatFechaAmigable(fechaStr) {
-  if (!fechaStr || String(fechaStr).trim() === "") return "—";
-  let limpia = String(fechaStr).trim();
-  if (limpia.includes(' ') && !limpia.includes('-')) {
-    try {
-      const d = new Date(fechaStr);
-      if (!isNaN(d.getTime())) {
-        const dia = String(d.getDate()).padStart(2, '0');
-        const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-        return `${dia}/${meses[d.getMonth()]}/${d.getFullYear()}`;
-      }
-    } catch(e) {}
-  }
-  if (limpia.includes('T')) limpia = limpia.split('T')[0];
-  const partes = limpia.split('-'); 
-  if (partes.length === 3) {
-    const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-    return `${partes[2].padStart(2, '0')}/${meses[parseInt(partes[1],10)-1]}/${partes[0]}`;
-  }
-  return limpia;
-}
-  
-let SESSION = null; let BOOTSTRAP = null; let ITEMS = []; let rowSeq = 0; let editingId = null;
-let currentActiveReporteId = null; let currentActiveViaticoId = null; window.pdfGlobalBase64String = "";
-let CACHE_REPORTES = []; let CACHE_VIATICOS = [];
-
 // ENRUTADOR ASÍNCRONO NATIVO OPTIMIZADO
 function api(action, payload) {
   showLoading(true);
@@ -500,9 +474,13 @@ function api(action, payload) {
   });
 }
 
-function showLoading(v) { document.getElementById('loading').classList.toggle('hidden', !v); }
+function showLoading(v) { 
+  document.getElementById('loading').classList.toggle('hidden', !v); 
+}
+
 function showToast(msg, isError) {
-  const t = document.getElementById('toast'); t.textContent = msg;
+  const t = document.getElementById('toast'); 
+  t.textContent = msg;
   t.className = 'toast show' + (isError ? ' error' : '');
   setTimeout(() => t.classList.remove('show'), 4000);
 }
