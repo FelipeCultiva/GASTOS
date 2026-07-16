@@ -187,9 +187,19 @@ table.reportes tr:hover{background:var(--gray-050);}
           </div>
           <h2>Nueva Solicitud de Viáticos (Anticipo)</h2>
           <div class="grid-3" style="margin-bottom:14px;">
-            <div class="field"><label>Fecha Viaje Desde</label><input type="date" id="sv-desde"></div>
-            <div class="field"><label>Fecha Viaje Hasta</label><input type="date" id="sv-hasta"></div>
-            <div class="field"><label>Jefe Inmediato</label><input type="text" id="sv-jefe" placeholder="Nombre de tu superior"></div>
+            <div class="field">
+              <label>Fecha Viaje Desde</label>
+              <!-- Al cambiar esta fecha, inyecta dinámicamente el límite 'min' al segundo calendario -->
+              <input type="date" id="sv-desde" onchange="document.getElementById('sv-hasta').min = this.value; if(document.getElementById('sv-hasta').value && document.getElementById('sv-hasta').value < this.value) { document.getElementById('sv-hasta').value = ''; }">
+            </div>
+            <div class="field">
+              <label>Fecha Viaje Hasta</label>
+              <input type="date" id="sv-hasta">
+            </div>
+            <div class="field">
+              <label>Jefe Inmediato</label>
+              <input type="text" id="sv-jefe" placeholder="Nombre de tu superior">
+            </div>
           </div>
           <div class="grid-3" style="margin-bottom:14px;">
             <div class="field"><label>Motivo de la Solicitud</label><input type="text" id="sv-motivo" placeholder="Ej. Comisión de apertura de sucursal"></div>
@@ -222,18 +232,40 @@ table.reportes tr:hover{background:var(--gray-050);}
         </div>
         
         <div class="card">
-          <!-- REQUERIMIENTO 2: Campo superior derecho de Monto Asignado -->
-          <!-- REQUERIMIENTO 2: Campo resaltado con fondo especial y alerta visual -->
-          <div class="field" style="margin:0; width:210px; background: var(--gold-100); padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--gold-600); box-shadow: 0 2px 8px rgba(200,155,60,0.15);">
-            <label style="font-size:10.5px; color: var(--navy-900); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">💰 Mto. Viáticos Asignado</label>
-            <input type="number" id="monto-asignado-input" placeholder="0.00" step="0.01" style="padding:6px 10px; font-size:14px; font-weight: bold; border-color: var(--gold-600); color: var(--navy-900); background: var(--white);" oninput="calcularDiferenciaViaticos()">
-          </div>
-
           <h2>Periodo de comprobación</h2>
-          <div class="grid-3" style="margin-top:10px;">
-            <div class="field"><label>Desde</label><input type="date" id="periodo-desde" onchange="actualizarLimitesCalendario()"></div>
-            <div class="field"><label>Hasta</label><input type="date" id="periodo-hasta" onchange="actualizarLimitesCalendario()"></div>
-            <div class="field"><label>Motivo</label><input type="text" id="motivo" placeholder="Ej. Visita operativa Toluca"></div>
+  
+          <!-- Contenedor flexible y responsivo que alinea todo en una sola línea ajustada -->
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;">
+    
+           <!-- 1. Izquierda: Monto Viáticos Asignado (Resaltado institucional) -->
+            <div class="field" style="margin:0; width: 200px; background: var(--gold-100); padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--gold-600); box-shadow: 0 2px 8px rgba(200,155,60,0.15);">
+              <label style="font-size:10.5px; color: var(--navy-900); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">💰 Mto. Viáticos Asignado</label>
+              <input type="number" id="monto-asignado-input" placeholder="0.00" step="0.01" style="padding:6px 10px; font-size:14px; font-weight: bold; border-color: var(--gold-600); color: var(--navy-900); background: var(--white); width: 100%;" oninput="calcularDiferenciaViaticos()">
+            </div>
+
+            <!-- 2. Centro-Izquierda: Fecha Desde (Compactado para formato DD/MM/AAAA) -->
+            <div class="field" style="margin:0; width: 155px;">
+             <label style="display:block; font-size:12px; font-weight:600; color:var(--gray-700); margin-bottom:5px;">Desde</label>
+             <input type="date" id="periodo-desde" style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 14px; background: var(--gray-050);" onchange="actualizarLimitesCalendario()">
+            </div>
+
+            <!-- 3. Centro-Derecha: Fecha Hasta (Compactado para formato DD/MM/AAAA) -->
+            <div class="field" style="margin:0; width: 155px;">
+             <label style="display:block; font-size:12px; font-weight:600; color:var(--gray-700); margin-bottom:5px;">Hasta</label>
+             <input type="date" id="periodo-hasta" style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 14px; background: var(--gray-050);" onchange="actualizarLimitesCalendario()">
+            </div>
+
+            <!-- 4. Derecha: Motivo (Ocupa de manera fluida todo el espacio restante del renglón) -->
+            <div class="field" style="margin:0; flex: 1; min-width: 280px;">
+             <label style="display:block; font-size:12px; font-weight:600; color:var(--gray-700); margin-bottom:5px;">Motivo del Reporte</label>
+             <input type="text" id="motivo" placeholder="Ej. Visita operativa Toluca" style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 14px; background: var(--gray-050);">
+            </div>
+
+            <!-- Botón de Impresión de Reporte integrado simétricamente al final de la fila -->
+            <div style="margin-bottom: 2px;">
+             <button class="btn btn-outline btn-sm" style="padding: 10px 14px;" onclick="imprimirPantalla('tab-nuevo')">🖨️ Imprimir Reporte</button>
+            </div>
+
           </div>
         </div>
 
@@ -732,22 +764,46 @@ async function submitSolicitudViaticos() {
   const monto = parseFloat(document.getElementById('sv-monto').value);
   const caja = document.getElementById('sv-caja').value;
 
-  if(!desde || !hasta || !jefe || !motivo || !monto || !caja) return showToast("Completa todos los campos.", true);
+  if(!desde || !hasta || !jefe || !motivo || !monto || !caja) {
+    return showToast("Completa todos los campos obligatorios del formulario.", true);
+  }
+
+  // CANDADO DE SEGURIDAD QA: Evitar que la fecha hasta sea menor al inicio
+  if (hasta < desde) {
+    return showToast("⚠️ Error cronológico: La 'Fecha Viaje Hasta' no puede ser anterior a la 'Fecha Viaje Desde'.", true);
+  }
+
   localStorage.setItem('mcm_jefe_' + SESSION.clave_empleado, jefe);
 
   try {
     const res = await api('submitViaticos', {
-      clave_empleado: BOOTSTRAP.empleado.clave, nombre_empleado: BOOTSTRAP.empleado.nombre,
-      puesto: BOOTSTRAP.empleado.puesto, area: BOOTSTRAP.empleado.sucursal_area,
-      centro_costo: BOOTSTRAP.empleado.centro_costo, periodo_desde: desde, periodo_hasta: hasta,
-      motivo: motivo, jefe_inmediato: jefe, monto_solicitado: monto, caja_entrega: caja
+      clave_empleado: BOOTSTRAP.empleado.clave, 
+      nombre_empleado: BOOTSTRAP.empleado.nombre,
+      puesto: BOOTSTRAP.empleado.puesto, 
+      area: BOOTSTRAP.empleado.sucursal_area,
+      centro_costo: BOOTSTRAP.empleado.centro_costo, 
+      periodo_desde: desde, 
+      periodo_hasta: hasta,
+      motivo: motivo, 
+      jefe_inmediato: jefe, 
+      monto_solicitado: monto, 
+      caja_entrega: caja
     });
-    showToast("Solicitud procesada: " + res.id_solicitud);
-    document.getElementById('sv-motivo').value = ''; document.getElementById('sv-monto').value = '';
+    showToast("Solicitud procesada con éxito: " + res.id_solicitud);
+    
+    // Limpieza de campos post-envío exitoso
+    document.getElementById('sv-desde').value = '';
+    document.getElementById('sv-hasta').value = '';
+    document.getElementById('sv-hasta').removeAttribute('min'); // Limpiar el límite del calendario
+    document.getElementById('sv-motivo').value = ''; 
+    document.getElementById('sv-monto').value = '';
+    
     switchTab('reportes');
-  } catch(e) { showToast(e.message, true); }
+  } catch(e) { 
+    showToast(e.message, true); 
+  }
 }
-
+  
 function cancelEdit() {
   editingId = null; window.pdfGlobalBase64String = "";
   document.getElementById('submit-btn').textContent = 'Enviar Reporte a Revisión';
