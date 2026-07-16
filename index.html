@@ -472,17 +472,58 @@ let SESSION = null; let BOOTSTRAP = null; let ITEMS = []; let rowSeq = 0; let ed
 let currentActiveReporteId = null; let currentActiveViaticoId = null; window.pdfGlobalBase64String = "";
 let CACHE_REPORTES = []; let CACHE_VIATICOS = [];
 
-async function api(action, payload) {
+// NUEVO ENRUTADOR ASÍNCRONO OFICIAL NATIVO DE GOOGLE
+function api(action, payload) {
+  showLoading(true);
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler((responseString) => {
+        showLoading(false);
+        const data = JSON.parse(responseString);
+        if (!data.ok) reject(new Error(data.error || "Excepción en servidor"));
+        else resolve(data);
+      })
+      .withFailureHandler((err) => {
+        showLoading(false);
+        reject(new Error("Error crítico de comunicación: " + err.message));
+      })
+      .ejecutarAccionServidor(action, payload);
+  });
+}
+
+function showLoading(v) { document.getElementById('loading').classList.toggle('hidden', !v); }
+function showToast(msg, isError) {
+  const t = document.getElementById('toast'); t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// ... Mantén intactas las funciones intermedias (formatFechaAmigable, calcularDiferenciaViaticos, etc.) ...
+
+// CONFIGURACIÓN DE INICIO TOTALMENTE AUTOMATIZADA
+(async function init() {
   showLoading(true);
   try {
-    const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
-      method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action, payload })
-    });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || "Excepción en servidor");
-    return data;
-  } finally { showLoading(false); }
-}
+    const saved = sessionStorage.getItem('mcm_session_v2');
+    if (saved) { 
+      SESSION = JSON.parse(saved); 
+      await runApplication(); 
+    } else {
+      // Fuerza la descarga y pintado de la versión desde el Sheets aun sin loggearse
+      // Esto destraba el mensaje "Cargando meta-información..." al abrir el sitio
+      google.script.run
+        .withSuccessHandler((responseString) => {
+          showLoading(false);
+          const data = JSON.parse(responseString);
+          const metaText = `Versión: ${data.version_sistema || 'v2.1.0'} | Publicación: ${formatFechaAmigable(data.fecha_publicacion) || '13/Jul/2026'}`;
+          document.getElementById('login-footer-text').textContent = metaText;
+        })
+        .ejecutarAccionServidor('bootstrap', { clave_empleado: '' });
+    }
+  } catch(e) {
+    showLoading(false);
+  }
+})();
 
 function showLoading(v) { document.getElementById('loading').classList.toggle('hidden', !v); }
 function showToast(msg, isError) {
