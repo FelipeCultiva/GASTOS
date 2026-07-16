@@ -418,31 +418,49 @@ let SESSION = null; let BOOTSTRAP = null; let ITEMS = []; let rowSeq = 0; let ed
 let currentActiveReporteId = null; let currentActiveViaticoId = null; window.pdfGlobalBase64String = "";
 let CACHE_REPORTES = []; let CACHE_VIATICOS = [];
 
-// ENRUTADOR ASÍNCRONO NATIVO OPTIMIZADO
+// ENRUTADOR INTELIGENTE (Detecta si está en Google o en GitHub automáticamente)
 function api(action, payload) {
   showLoading(true);
+  
+  // Si está corriendo dentro de Google Apps Script, usa el canal nativo rápido
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    return new Promise((resolve, reject) => {
+      google.script.run
+        .withSuccessHandler((responseString) => {
+          showLoading(false);
+          try {
+            const data = JSON.parse(responseString);
+            if (!data.ok) reject(new Error(data.error || "Excepción en servidor"));
+            else resolve(data);
+          } catch (err) {
+            reject(new Error("Respuesta de servidor inválida: " + err.message));
+          }
+        })
+        .withFailureHandler((err) => {
+          showLoading(false);
+          reject(new Error("Error de comunicación Google: " + (err.message || err)));
+        })
+        .ejecutarAccionServidor(action, payload);
+    });
+  } 
+  
+  // SI ESTÁ EN GITHUB: Usa una petición Fetch POST tradicional directo a la URL de producción
   return new Promise((resolve, reject) => {
-    if (typeof google === 'undefined' || !google.script || !google.script.run) {
+    fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action, payload })
+    })
+    .then(res => res.json())
+    .then(data => {
       showLoading(false);
-      reject(new Error("La API de Google no se ha cargado. Por favor, refresca la página."));
-      return;
-    }
-    google.script.run
-      .withSuccessHandler((responseString) => {
-        showLoading(false);
-        try {
-          const data = JSON.parse(responseString);
-          if (!data.ok) reject(new Error(data.error || "Excepción en servidor"));
-          else resolve(data);
-        } catch (err) {
-          reject(new Error("Respuesta inválida del servidor: " + err.message));
-        }
-      })
-      .withFailureHandler((err) => {
-        showLoading(false);
-        reject(new Error("Error crítico en el backend de Google: " + (err.message || err)));
-      })
-      .ejecutarAccionServidor(action, payload);
+      if (!data.ok) reject(new Error(data.error || "Error en base de datos"));
+      else resolve(data);
+    })
+    .catch(err => {
+      showLoading(false);
+      reject(new Error("La pasarela web falló o requiere autorización. Revisa tu Code.gs"));
+    });
   });
 }
 
@@ -978,38 +996,48 @@ async function dictaminarViatico(estatus) {
 
 function closeModal() { document.getElementById('detalle-modal').classList.add('hidden'); }
 
-// MOTOR DE INICIALIZACIÓN SEGURO CON PROTECCIÓN DE CONCURRENCIA
+// ARRANQUE SEGURO CON SOPORTE HÍBRIDO GOOGLE / GITHUB
 (function initPoller() {
-  const maxIntentos = 50; let intentos = 0;
-  function checkAPI() {
-    intentos++;
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      (async function() {
-        try {
-          const saved = sessionStorage.getItem('mcm_session_v2');
-          if (saved) { 
-            SESSION = JSON.parse(saved); 
-            await runApplication(); 
-          } else {
-            google.script.run
-              .withSuccessHandler((responseString) => {
-                showLoading(false);
-                const data = JSON.parse(responseString);
-                const metaText = `Versión: ${data.version_sistema || 'v2.1.0'} | Publicación: ${formatFechaAmigable(data.fecha_publicacion) || '13/Jul/2026'}`;
-                document.getElementById('login-footer-text').textContent = metaText;
-              })
-              .ejecutarAccionServidor('bootstrap', { clave_empleado: '' });
-          }
-        } catch(e) { showLoading(false); }
-      })();
-    } else if (intentos < maxIntentos) {
-      setTimeout(checkAPI, 100);
-    } else {
-      showLoading(false);
-      document.getElementById('login-footer-text').textContent = "Error: Tiempo de espera agotado al conectar con Google.";
+  // Si detecta que está en el entorno de Google Apps Script, espera a que cargue la API nativa
+  if (window.location.hostname.includes('googleusercontent.com') || window.location.hostname.includes('google.com')) {
+    const maxIntentos = 50; let intentos = 0;
+    function checkAPI() {
+      intentos++;
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        ejecutarCargaInicial();
+      } else if (intentos < maxIntentos) {
+        setTimeout(checkAPI, 100);
+      } else {
+        showLoading(false);
+        document.getElementById('login-footer-text').textContent = "Error: Tiempo de espera agotado en Google.";
+      }
     }
+    checkAPI();
+  } else {
+    // SI ESTÁ CORRIENDO DESDE GITHUB PAGES: Salta el validador e inicia la carga por Fetch directo de golpe
+    ejecutarCargaInicial();
   }
-  checkAPI();
+
+  function ejecutarCargaInicial() {
+    (async function() {
+      try {
+        const saved = sessionStorage.getItem('mcm_session_v2');
+        if (saved) { 
+          SESSION = JSON.parse(saved); 
+          await runApplication(); 
+        } else {
+          const data = await api('bootstrap', { clave_empleado: '' });
+          const metaText = `Versión: ${data.version_sistema || 'v2.1.0'} | Publicación: ${formatFechaAmigable(data.fecha_publicacion) || '13/Jul/2026'}`;
+          document.getElementById('login-footer-text').textContent = metaText;
+          showLoading(false);
+        }
+      } catch(e) { 
+        // Fallback por si la base de datos requiere credenciales para el bootstrap inicial
+        document.getElementById('login-footer-text').textContent = " MCM | Suite Operativa — Digite credenciales";
+        showLoading(false); 
+      }
+    })();
+  }
 })();
 </script>
 </body>
