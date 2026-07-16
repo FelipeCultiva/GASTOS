@@ -58,7 +58,6 @@ main{flex:1;max-width:1280px;width:100%;margin:0 auto;padding:24px 26px 40px;}
 .card{background:var(--white);border:1px solid var(--gray-200);border-radius:10px;padding:20px 22px;margin-bottom:18px;position:relative;}
 .card h2{font-family:'Libre Franklin',sans-serif;font-size:14px;text-transform:uppercase;color:var(--navy-900);margin:0 0 16px 0;}
 
-/* REQUERIMIENTO 4: Diseño responsivo adaptado 100% a móviles */
 .grid-4, .grid-3{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;}
 
 .readonly-field{background:var(--gray-050);border:1px solid var(--gray-200);border-radius:6px;padding:9px 12px;}
@@ -89,7 +88,6 @@ table.reportes tr:hover{background:var(--gray-050);}
 .estatus-AUTORIZADO{background:var(--green-100);color:var(--green-700);}
 .estatus-RECHAZADO{background:var(--red-100);color:var(--red-700);}
 
-/* REQUERIMIENTO 5: Cuadros de diálogo estéticos para motivos de rechazo */
 .rechazo-box {background: var(--red-100); border-left: 5px solid var(--red-700); padding: 14px; border-radius: 6px; margin-top: 15px;}
 .rechazo-box h4 {margin: 0 0 5px 0; color: var(--red-700); font-size: 13px; text-transform: uppercase;}
 .rechazo-box p {margin: 0; font-size: 13px; color: var(--ink); font-family: 'IBM Plex Mono', monospace;}
@@ -116,7 +114,6 @@ table.reportes tr:hover{background:var(--gray-050);}
 .footer-version {text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gray-400); margin-top:16px;}
 .main-footer {max-width:1280px; width:100%; margin:0 auto; padding:0 26px 20px; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gray-500);}
 
-/* REQUERIMIENTO 3: Reglas de impresión ajustadas al ancho de hoja Carta */
 @media print {
   body { background: white; color: black; }
   #topbar, #tabs, .btn, #global-clip-btn, .search-box-container, .main-footer, .th-filter-wrap input, .th-filter-wrap select { display: none !important; }
@@ -171,7 +168,6 @@ table.reportes tr:hover{background:var(--gray-050);}
     <main>
       <!-- ===================== TAB: SOLICITUD VIÁTICOS ===================== -->
       <section id="tab-solicitud">
-        <!-- REQUERIMIENTO 1: Mismo encabezado de colaborador desplegado aquí -->
         <div class="card header-colaborador-block">
           <h2>Datos del colaborador</h2>
           <div class="grid-4">
@@ -190,7 +186,6 @@ table.reportes tr:hover{background:var(--gray-050);}
           <div class="grid-3" style="margin-bottom:14px;">
             <div class="field">
               <label>Fecha Viaje Desde</label>
-              <!-- Al cambiar esta fecha, inyecta dinámicamente el límite 'min' al segundo calendario -->
               <input type="date" id="sv-desde" onchange="document.getElementById('sv-hasta').min = this.value; if(document.getElementById('sv-hasta').value && document.getElementById('sv-hasta').value < this.value) { document.getElementById('sv-hasta').value = ''; }">
             </div>
             <div class="field">
@@ -208,7 +203,6 @@ table.reportes tr:hover{background:var(--gray-050);}
             <div class="field"><label>Caja para Entrega de Recursos</label><select id="sv-caja"><option value="">Seleccionar caja...</option></select></div>
           </div>
           
-          <!-- REQUERIMIENTO 5: Diálogo de rechazo en Viáticos -->
           <div id="rechazo-viatico-container" class="rechazo-box hidden">
             <h4>Motivo de Rechazo Administrativo:</h4>
             <p id="rechazo-viatico-texto"></p>
@@ -234,39 +228,26 @@ table.reportes tr:hover{background:var(--gray-050);}
         
         <div class="card">
           <h2>Periodo de comprobación</h2>
-  
-          <!-- Contenedor flexible y responsivo que alinea todo en una sola línea ajustada -->
           <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;">
-    
-           <!-- 1. Izquierda: Monto Viáticos Asignado (Resaltado institucional) -->
             <div class="field" style="margin:0; width: 200px; background: var(--gold-100); padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--gold-600); box-shadow: 0 2px 8px rgba(200,155,60,0.15);">
               <label style="font-size:10.5px; color: var(--navy-900); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">💰 Mto. Viáticos Asignado</label>
               <input type="number" id="monto-asignado-input" placeholder="0.00" step="0.01" style="padding:6px 10px; font-size:14px; font-weight: bold; border-color: var(--gold-600); color: var(--navy-900); background: var(--white); width: 100%;" oninput="calcularDiferenciaViaticos()">
             </div>
-
-            <!-- 2. Centro-Izquierda: Fecha Desde (Compactado para formato DD/MM/AAAA) -->
             <div class="field" style="margin:0; width: 155px;">
              <label style="display:block; font-size:12px; font-weight:600; color:var(--gray-700); margin-bottom:5px;">Desde</label>
              <input type="date" id="periodo-desde" style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 14px; background: var(--gray-050);" onchange="actualizarLimitesCalendario()">
             </div>
-
-            <!-- 3. Centro-Derecha: Fecha Hasta (Compactado para formato DD/MM/AAAA) -->
             <div class="field" style="margin:0; width: 155px;">
              <label style="display:block; font-size:12px; font-weight:600; color:var(--gray-700); margin-bottom:5px;">Hasta</label>
              <input type="date" id="periodo-hasta" style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 14px; background: var(--gray-050);" onchange="actualizarLimitesCalendario()">
             </div>
-
-            <!-- 4. Derecha: Motivo (Ocupa de manera fluida todo el espacio restante del renglón) -->
             <div class="field" style="margin:0; flex: 1; min-width: 280px;">
              <label style="display:block; font-size:12px; font-weight:600; color:var(--gray-700); margin-bottom:5px;">Motivo del Reporte</label>
              <input type="text" id="motivo" placeholder="Ej. Visita operativa Toluca" style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 14px; background: var(--gray-050);">
             </div>
-
-            <!-- Botón de Impresión de Reporte integrado simétricamente al final de la fila -->
             <div style="margin-bottom: 2px;">
              <button class="btn btn-outline btn-sm" style="padding: 10px 14px;" onclick="imprimirPantalla('tab-nuevo')">🖨️ Imprimir Reporte</button>
             </div>
-
           </div>
         </div>
 
@@ -301,13 +282,11 @@ table.reportes tr:hover{background:var(--gray-050);}
             </table>
           </div>
           
-          <!-- REQUERIMIENTO 2: Bloque final con restas y etiquetas dinámicas condicionadas -->
           <div style="margin-top:15px; border-top:2px dashed var(--gray-200); padding-top:12px; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
             <div style="font-family:monospace; font-size:14px; color:var(--gray-700);">Total Gastos Reportados: <span id="total-val">$0.00</span></div>
             <div style="font-family:monospace; font-size:16px; font-weight:700; color:var(--navy-900);" id="diferencia-viaticos-block">Saldo a devolver: $0.00</div>
           </div>
 
-          <!-- REQUERIMIENTO 5: Diálogo de rechazo en Reporte de Gastos -->
           <div id="rechazo-reporte-container" class="rechazo-box hidden">
             <h4>Motivo de Rechazo Administrativo:</h4>
             <p id="rechazo-reporte-texto"></p>
@@ -324,12 +303,10 @@ table.reportes tr:hover{background:var(--gray-050);}
       <section id="tab-reportes" class="hidden">
         <div class="card">
           <h2>Bandeja de Reportes de Gastos</h2>
-          
           <div id="search-block-gastos" class="search-box-container hidden">
             <input type="text" id="search-input-gastos" class="search-input" placeholder="🔍 Búsqueda inteligente (Digita folio, colaborador o motivo)...">
             <button class="btn btn-primary btn-sm" onclick="ejecutarFiltrosReportes()">Buscar</button>
           </div>
-
           <table class="reportes" id="table-gastos-principal">
             <thead>
               <tr>
@@ -348,12 +325,10 @@ table.reportes tr:hover{background:var(--gray-050);}
         
         <div class="card">
           <h2>Bandeja de Solicitudes de Viáticos</h2>
-
           <div id="search-block-viaticos" class="search-box-container hidden">
             <input type="text" id="search-input-viaticos" class="search-input" placeholder="🔍 Búsqueda inteligente (Digita solicitud, colaborador o caja destino)...">
             <button class="btn btn-primary btn-sm" onclick="ejecutarFiltrosViaticos()">Buscar</button>
           </div>
-
           <table class="reportes" id="table-viaticos-principal">
             <thead>
               <tr>
@@ -394,7 +369,6 @@ table.reportes tr:hover{background:var(--gray-050);}
           <tbody id="detalle-tbody"></tbody>
         </table>
         
-        <!-- REQUERIMIENTO 6: Cuadro visual para perfiles AUD -->
         <div id="aud-rechazo-view-block" class="rechazo-box hidden" style="margin-top:15px; background:var(--gray-050); border-left-color:var(--gray-500);">
           <h4 style="color:var(--gray-700);">Historial de Observaciones / Rechazo:</h4>
           <p id="aud-rechazo-texto" style="color:var(--navy-900); font-weight:600;"></p>
@@ -413,22 +387,19 @@ table.reportes tr:hover{background:var(--gray-050);}
   </div>
 </div>
 
-<!-- ===================== MODAL VIÁTICOS CORREGIDO ===================== -->
+<!-- ===================== MODAL VIÁTICOS ===================== -->
 <div id="viatico-modal" class="modal-overlay hidden" style="position:fixed; inset:0; background:rgba(11,37,69,0.55); display:flex; align-items:center; justify-content:center; z-index:150; padding: 20px;">
   <div class="card" style="width:480px; position:relative; padding-top:25px;">
-    <!-- Botón de escape garantizado en la esquina superior derecha -->
     <button class="btn btn-outline btn-sm" onclick="closeViaticoModal()" style="position:absolute; right:15px; top:15px; padding:3px 8px;">×</button>
     
     <h3 id="v-modal-titulo" style="margin-top:10px; color:var(--navy-900);">Consulta de Anticipo de Viáticos</h3>
     <p id="v-modal-info" style="font-size:13px; color:var(--gray-700); line-height: 1.4; background:var(--gray-050); padding:10px; border-radius:6px; border:1px solid var(--gray-200);"></p>
     
-    <!-- Bloque Dinámico para mostrar los comentarios de autorización o rechazo -->
     <div id="aud-v-rechazo-block" class="rechazo-box hidden" style="margin-top:15px; margin-bottom:15px;">
       <h4 id="aud-v-rechazo-titulo">Observaciones de la Dictaminación:</h4>
       <p id="aud-v-rechazo-texto"></p>
     </div>
 
-    <!-- Bloque exclusivo de acciones del Administrador (Se oculta para usuarios comunes) -->
     <div id="admin-v-actions-block" class="hidden" style="margin-top:15px; border-top:1px solid var(--gray-200); padding-top:15px;">
       <textarea id="v-admin-comment" rows="2" style="width:100%; margin-bottom:12px; padding:8px; border-radius:6px; border:1px solid var(--gray-200);" placeholder="Escribe las observaciones de dictaminación obligatorias aquí..."></textarea>
       <div style="display:flex; justify-content:flex-end; gap:8px;">
@@ -443,9 +414,9 @@ table.reportes tr:hover{background:var(--gray-050);}
 <div id="loading" class="loading-overlay hidden"><div class="spinner-clock"></div><h2>Procesando Información...</h2></div>
 
 <script>
-const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycby3U7QnkmXGrMqKaLSRiZY3t_0I1REFkDKl9arH_f1RA_VN8F-othVr8gdn-o-P3foq/exec"
-};
+let SESSION = null; let BOOTSTRAP = null; let ITEMS = []; let rowSeq = 0; let editingId = null;
+let currentActiveReporteId = null; let currentActiveViaticoId = null; window.pdfGlobalBase64String = "";
+let CACHE_REPORTES = []; let CACHE_VIATICOS = [];
 
 // ENRUTADOR ASÍNCRONO NATIVO OPTIMIZADO
 function api(action, payload) {
@@ -485,7 +456,29 @@ function showToast(msg, isError) {
   t.className = 'toast show' + (isError ? ' error' : '');
   setTimeout(() => t.classList.remove('show'), 4000);
 }
- 
+
+function formatFechaAmigable(fechaStr) {
+  if (!fechaStr || String(fechaStr).trim() === "") return "—";
+  let limpia = String(fechaStr).trim();
+  if (limpia.includes(' ') && !limpia.includes('-')) {
+    try {
+      const d = new Date(fechaStr);
+      if (!isNaN(d.getTime())) {
+        const dia = String(d.getDate()).padStart(2, '0');
+        const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+        return `${dia}/${meses[d.getMonth()]}/${d.getFullYear()}`;
+      }
+    } catch(e) {}
+  }
+  if (limpia.includes('T')) limpia = limpia.split('T')[0];
+  const partes = limpia.split('-'); 
+  if (partes.length === 3) {
+    const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+    return `${partes[2].padStart(2, '0')}/${meses[parseInt(partes[1],10)-1]}/${partes[0]}`;
+  }
+  return limpia;
+}
+
 function imprimirPantalla(sectionId) {
   document.querySelectorAll('section').forEach(s => s.classList.remove('print-active'));
   document.getElementById(sectionId).classList.add('print-active');
@@ -800,6 +793,7 @@ function ejecutarFiltrosReportes() {
   renderTablaGastos(filtered);
 }
 
+// CORRECCIÓN FIX: Renderizado explícito de celdas y mapeo dinámico regional
 function renderTablaGastos(lista) {
   const tbodyR = document.getElementById('reportes-tbody'); tbodyR.innerHTML = '';
   lista.forEach(r => {
@@ -808,7 +802,7 @@ function renderTablaGastos(lista) {
     tr.innerHTML = `
       <td><b>${r.id_reporte}</b></td><td>${r.nombre_empleado}</td>
       <td>${formatFechaAmigable(r.periodo_desde)} / ${formatFechaAmigable(r.periodo_hasta)}</td>
-      <td>${r.motivo}</td><td>$${Number(r.total_gastos).toLocaleString('es-MX')}</td>
+      <td>${r.motivo}</td><td>$${Number(r.total_gastos).toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
       <td><span class="estatus-pill estatus-${r.estatus}">${r.estatus}</span></td>
       <td>
         <button class="btn btn-outline btn-sm" onclick="openReporteDetalle('${r.id_reporte}', ${puedeDictaminar}, '${r.comentario_autorizacion || ''}')">Revisar</button>
@@ -991,7 +985,6 @@ function closeModal() { document.getElementById('detalle-modal').classList.add('
   function checkAPI() {
     intentos++;
     if (typeof google !== 'undefined' && google.script && google.script.run) {
-      // API de Google inyectada correctamente en el DOM
       (async function() {
         try {
           const saved = sessionStorage.getItem('mcm_session_v2');
@@ -1011,7 +1004,7 @@ function closeModal() { document.getElementById('detalle-modal').classList.add('
         } catch(e) { showLoading(false); }
       })();
     } else if (intentos < maxIntentos) {
-      setTimeout(checkAPI, 100); // Reintentar cada 100ms
+      setTimeout(checkAPI, 100);
     } else {
       showLoading(false);
       document.getElementById('login-footer-text').textContent = "Error: Tiempo de espera agotado al conectar con Google.";
