@@ -484,7 +484,7 @@ function showToast(msg, isError) {
   t.className = 'toast show' + (isError ? ' error' : '');
   setTimeout(() => t.classList.remove('show'), 4000);
 }
-
+ 
 function imprimirPantalla(sectionId) {
   document.querySelectorAll('section').forEach(s => s.classList.remove('print-active'));
   document.getElementById(sectionId).classList.add('print-active');
